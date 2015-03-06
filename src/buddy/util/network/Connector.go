@@ -1,12 +1,12 @@
 package network
 
 import (
+	"buddy/util/tools"
 	"code.google.com/p/goprotobuf/proto"
 	"common/msg"
 	"fmt"
 	"net"
 	"time"
-	"util/tools"
 )
 
 type ConnectHandler interface {

@@ -1,9 +1,9 @@
 package redis
 
 import (
+	"buddy/util/tools"
 	"fmt"
 	"github.com/garyburd/redigo/redis"
-	"util/tools"
 )
 
 type RedisCon struct {

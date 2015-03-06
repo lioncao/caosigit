@@ -1,8 +1,8 @@
 package network
 
 import (
+	"buddy/util/tools"
 	"net"
-	"util/tools"
 )
 
 type Listener struct {

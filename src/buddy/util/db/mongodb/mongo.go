@@ -1,10 +1,10 @@
 package mongodb
 
 import (
+	"buddy/util/tools"
 	"fmt"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"util/tools"
 )
 
 type MgoCon struct {

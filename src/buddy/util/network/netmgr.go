@@ -1,8 +1,8 @@
 package network
 
 import (
+	"buddy/util/tools"
 	"fmt"
-	"util/tools"
 )
 
 type Netmgr struct {
