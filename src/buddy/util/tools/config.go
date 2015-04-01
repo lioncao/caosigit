@@ -2,7 +2,6 @@ package tools
 
 import (
 	"bufio"
-	"fmt"
 	"os"
 	"strings"
 )
@@ -32,15 +31,23 @@ func (this *configMgr) Load(path string) error {
 	return nil
 }
 
-func (this *configMgr) Get(section, key string) (string, error) {
+func (this *configMgr) GetSection(s string) map[string]string {
+	se, ok := this.MainData[s]
+	if ok {
+		return se
+	} else {
+		return nil
+	}
+}
+
+func (this *configMgr) Get(section, key string) (string, bool) {
 	s, ok := this.MainData[section]
 	if ok {
 		v, ok := s[key]
-		if ok {
-			return v, nil
-		}
+		return v, ok
+
 	}
-	return "", fmt.Errorf("config not found section:%s key:%s", section, key)
+	return "", false
 }
 
 func (this *configMgr) PraseString(content string) {

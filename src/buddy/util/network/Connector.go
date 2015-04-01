@@ -2,17 +2,19 @@ package network
 
 import (
 	"buddy/util/tools"
-	"code.google.com/p/goprotobuf/proto"
-	"common/msg"
+	//"code.google.com/p/goprotobuf/proto"
+	//"common/msg"
 	"fmt"
 	"net"
 	"time"
 )
 
 type ConnectHandler interface {
-	OnClose(sid int32)
 	Init()
-	GetMessageHandler(cmd int32) (func(c *Connector, data *msg.S2S) error, bool)
+	OnClose(sid int32)
+	OnProcess(b LockBuffer) error
+	Ping()
+	//GetMessageHandler(cmd int32) (func(c *Connector, data *msg.S2S) error, bool)
 }
 
 type Connector struct {
@@ -95,7 +97,7 @@ func (this *Connector) Connect(id int32, ip, port string, m *Netmgr, h ConnectHa
 func (this *Connector) StartHandler() {
 	go this.Read()
 	this.tickTime = time.Now().Unix()
-	this.t = time.AfterFunc(5*time.Second, this.Ping)
+	this.t = time.AfterFunc(5*time.Second, this.MsgHandlerMgr.Ping)
 	for {
 		if this.status == 1 {
 			break
@@ -116,8 +118,13 @@ func (this *Connector) StartHandler() {
 			}
 			this.conn.Write(data)
 		}
+		err1 := this.MsgHandlerMgr.OnProcess(this.buffer)
+		if err1 != nil {
+			this.status = 1
+			break
+		}
 
-		data1, err1 := this.buffer.PopInputData()
+		/*data1, err1 := this.buffer.PopInputData()
 		if err1 != nil {
 			tools.GetLog().LogError("this.buffer.PopInputData() err:%s", err1)
 			this.status = 1
@@ -144,14 +151,14 @@ func (this *Connector) StartHandler() {
 			} else {
 				tools.GetLog().LogError("process cmd err:%s", err1)
 			}
-		}
+		}*/
 	}
 	//断开连接
 	this.t.Stop()
 	this.Close()
 }
 
-func (this *Connector) Ping() {
+/*func (this *Connector) Ping() {
 	now := time.Now().Unix()
 	var temp msg.S2S
 	temp = msg.S2S{
@@ -161,7 +168,7 @@ func (this *Connector) Ping() {
 	buffer, _ := proto.Marshal(&temp)
 	this.Send(buffer)
 	time.AfterFunc(time.Second*5, this.Ping)
-}
+}*/
 
 func (this *Connector) Close() {
 	defer this.conn.Close()
