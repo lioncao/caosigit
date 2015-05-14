@@ -1,0 +1,4 @@
+require "lfs"
+
+
+print("haha")

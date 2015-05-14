@@ -11,15 +11,15 @@ import (
 ////////////////////////////////////////////////////////////////////////////////
 // 通用db相关数据结构
 ////////////////////////////////////////////////////////////////////////////////
-type CommonDataPool struct {
-	datas map[string]*CommonData
+type CommonJsonDataPool struct {
+	datas map[string]*CommonJsonData
 }
 
-func (this *CommonDataPool) Init() {
-	this.datas = make(map[string]*CommonData)
+func (this *CommonJsonDataPool) Init() {
+	this.datas = make(map[string]*CommonJsonData)
 }
 
-func (this *CommonDataPool) Put(key string, data *CommonData) error {
+func (this *CommonJsonDataPool) Put(key string, data *CommonJsonData) error {
 	if key == "" || data == nil {
 		return Error("put common data err key=%s,data=%v", key, data)
 	}
@@ -27,7 +27,7 @@ func (this *CommonDataPool) Put(key string, data *CommonData) error {
 	return nil
 }
 
-func (this *CommonDataPool) Get(key string) *CommonData {
+func (this *CommonJsonDataPool) Get(key string) *CommonJsonData {
 	if key == "" {
 		return nil
 	}
@@ -38,8 +38,16 @@ func (this *CommonDataPool) Get(key string) *CommonData {
 	return v
 }
 
-// 统一数据格式, 对应data.json
 type CommonData struct {
+	strs      map[string]string
+	strSlince map[string][]string
+
+	ints       map[string]int64
+	intSlinces map[string][]int64
+}
+
+// 统一数据格式, 对应data.json
+type CommonJsonData struct {
 	FileName string     `json:"-"`      // 原始文件的名字
 	JsonStr  string     `json:"-"`      // 原始的json字符串
 	Fields   []string   `json:"fields"` // 数据名称列表
@@ -54,14 +62,14 @@ type CommonData struct {
 
 }
 
-func NewCommonData() *CommonData {
-	this := new(CommonData)
+func NewCommonJsonData() *CommonJsonData {
+	this := new(CommonJsonData)
 	// this.FieldNameMap = new(map[string]int)
 	return this
 }
 
 // 从json格式中读取统一数据
-func (this *CommonData) DecodeJsonFile(filename string) error {
+func (this *CommonJsonData) DecodeJsonFile(filename string) error {
 	var e error
 
 	f, e := os.Open(filename)
@@ -129,21 +137,21 @@ func (this *CommonData) DecodeJsonFile(filename string) error {
 	return nil
 }
 
-func (this *CommonData) getValue(index int, fieldName string) string {
+func (this *CommonJsonData) getValue(index int, fieldName string) string {
 	var (
 		fieldIndex int
 		ok         bool
 	)
 
 	if index < 0 || index > this.DataCount {
-		ShowError("CommonData.getValue() invalid index , fileName=", Color(CL_YELLOW, this.FileName),
+		ShowError("CommonJsonData.getValue() invalid index , fileName=", Color(CL_YELLOW, this.FileName),
 			", index=", index, ", DataCount=", this.DataCount)
 		return ""
 	}
 
 	fieldIndex, ok = this.FieldNameMap[fieldName]
 	if !ok {
-		ShowError("CommonData.getValue() invalid fieldName , fileName=", Color(CL_YELLOW, this.FileName),
+		ShowError("CommonJsonData.getValue() invalid fieldName , fileName=", Color(CL_YELLOW, this.FileName),
 			" ,fieldName=", fieldName)
 		return ""
 	}
@@ -152,26 +160,26 @@ func (this *CommonData) getValue(index int, fieldName string) string {
 }
 
 // 从数据集中解析出一个 string
-func (this *CommonData) ParseString(index int, fieldName string) string {
+func (this *CommonJsonData) ParseString(index int, fieldName string) string {
 	return this.getValue(index, fieldName)
 }
 
 // 从数据集中解析出一个int64
-func (this *CommonData) ParseInt64(index int, fieldName string) int64 {
+func (this *CommonJsonData) ParseInt64(index int, fieldName string) int64 {
 	var (
 		value string
 	)
 
 	value = this.getValue(index, fieldName)
 	if value == "" {
-		ShowWarnning("CommonData.ParseInt64() get empty value , fileName=", Color(CL_YELLOW, this.FileName),
+		ShowWarnning("CommonJsonData.ParseInt64() get empty value , fileName=", Color(CL_YELLOW, this.FileName),
 			",index=", index, ",fieldName=", fieldName, ",ID=", this.getValue(index, "ID"))
 		return 0
 	}
 
 	i64, err := strconv.ParseInt(value, 0, 64)
 	if err != nil {
-		ShowError("CommonData.ParseInt64() get value faild, fileName=", Color(CL_YELLOW, this.FileName),
+		ShowError("CommonJsonData.ParseInt64() get value faild, fileName=", Color(CL_YELLOW, this.FileName),
 			",index=", index, ",fieldName=", fieldName, "value=", value, ",ID=", this.getValue(index, "ID"))
 		return 0
 	}
@@ -180,21 +188,21 @@ func (this *CommonData) ParseInt64(index int, fieldName string) int64 {
 }
 
 // 从数据集中解析出一个 float64
-func (this *CommonData) ParseFloat64(index int, fieldName string) float64 {
+func (this *CommonJsonData) ParseFloat64(index int, fieldName string) float64 {
 	var (
 		value string
 	)
 
 	value = this.getValue(index, fieldName)
 	if value == "" {
-		ShowWarnning("CommonData.ParseFloat64() get empty value , fileName=", Color(CL_YELLOW, this.FileName),
+		ShowWarnning("CommonJsonData.ParseFloat64() get empty value , fileName=", Color(CL_YELLOW, this.FileName),
 			",index=", index, ",fieldName=", fieldName, ",ID=", this.getValue(index, "ID"))
 		return 0.0
 	}
 
 	f64, err := strconv.ParseFloat(value, 64)
 	if err != nil {
-		ShowError("CommonData.ParseFloat64() get value faild, fileName=", Color(CL_YELLOW, this.FileName),
+		ShowError("CommonJsonData.ParseFloat64() get value faild, fileName=", Color(CL_YELLOW, this.FileName),
 			",index=", index, ",fieldName=", fieldName, "value=", value, ",ID=", this.getValue(index, "ID"))
 		return 0.0
 	}
@@ -203,21 +211,21 @@ func (this *CommonData) ParseFloat64(index int, fieldName string) float64 {
 }
 
 // 从数据集中解析出一个 bool
-func (this *CommonData) ParseBool(index int, fieldName string) bool {
+func (this *CommonJsonData) ParseBool(index int, fieldName string) bool {
 	var (
 		value string
 	)
 
 	value = this.getValue(index, fieldName)
 	if value == "" {
-		ShowWarnning("CommonData.ParseBool() get empty value , fileName=", Color(CL_YELLOW, this.FileName),
+		ShowWarnning("CommonJsonData.ParseBool() get empty value , fileName=", Color(CL_YELLOW, this.FileName),
 			",index=", index, ",fieldName=", fieldName, ",ID=", this.getValue(index, "ID"))
 		return false
 	}
 
 	b, err := strconv.ParseBool(value)
 	if err != nil {
-		ShowError("CommonData.ParseFloat64() get value faild, fileName=", Color(CL_YELLOW, this.FileName),
+		ShowError("CommonJsonData.ParseFloat64() get value faild, fileName=", Color(CL_YELLOW, this.FileName),
 			",index=", index, ",fieldName=", fieldName, "value=", value, ",ID=", this.getValue(index, "ID"))
 		return false
 	}
@@ -225,7 +233,51 @@ func (this *CommonData) ParseBool(index int, fieldName string) bool {
 	return b
 }
 
-func (this *CommonData) Print() {
+// func (this *CommonJsonData) ToCommDataList() []*CommonData {
+// 	count := this.DataCount
+// 	fieldCnt := this.FieldCount
+
+// 	list := make([]*CommonData, count)
+
+// 	// FileName string     `json:"-"`      // 原始文件的名字
+// 	// JsonStr  string     `json:"-"`      // 原始的json字符串
+// 	// Fields   []string   `json:"fields"` // 数据名称列表
+// 	// Types    []string   `json:"types"`  // 数据类型列表
+// 	// Values   [][]string `json:"values"` // 数据表
+// 	// ValueBuf [][]byte   `json:"-"`      // 每个value对应的json字符串(相当于预先打包好的单条数据的jsonStr)
+
+// 	// // 辅助数据
+// 	// DataCount    int            `json:"-"` // 数据总条数
+// 	// FieldNameMap map[string]int `json:"-"` // 数据名称到数据下标的映射
+// 	// FieldCount   int            `json:"-"` // 一条数据的数据个数
+// 	var (
+// 		fieldName string
+// 		typeName  string
+// 		cd        *CommonData
+// 	)
+// 	for i := 0; i < count; i++ {
+// 		cd = new(CommonData)
+
+// 		for j := 0; j < fieldCnt; j++ {
+// 			fieldName = this.Fields[j]
+// 			typeName = this.Types[j]
+// 			switch typeName {
+// 			case "I":
+// 				cd.ints[fieldName] = this.ParseInt64(i, fieldName)
+// 			case "S":
+// 				cd.strs[fieldName] = this.ParseString(i, fieldName)
+// 			case "IV":
+// 			case "SV":
+// 			case "B":
+// 				// cd.strs[fieldName] = this.ParseBool(i, fieldName)
+// 			}
+// 		}
+// 	}
+
+// 	return list
+// }
+
+func (this *CommonJsonData) Print() {
 	ShowDebug(fmt.Sprintf("\n\n-----start print file \"%s\"------------------------", this.FileName))
 	if this.Fields != nil {
 		ShowDebug("fields <", len(this.Fields), "> data")
