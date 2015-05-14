@@ -50,6 +50,7 @@ func (this *simpleLog) LogError(fmtstr string, a ...interface{}) {
 	if merr != nil {
 		fmt.Printf("%v\n", err)
 	} else {
+		fmt.Printf(Str)
 		_, mfeer := mf.WriteString(Str)
 		if mfeer != nil {
 			fmt.Printf("Write log error: %s", mfeer)

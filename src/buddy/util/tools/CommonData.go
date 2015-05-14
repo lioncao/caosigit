@@ -21,7 +21,7 @@ func (this *CommonJsonDataPool) Init() {
 
 func (this *CommonJsonDataPool) Put(key string, data *CommonJsonData) error {
 	if key == "" || data == nil {
-		return Error("put common data err key=%s,data=%v", key, data)
+		return fmt.Errorf("put common data err key=%s,data=%v", key, data)
 	}
 	this.datas[key] = data
 	return nil

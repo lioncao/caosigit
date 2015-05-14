@@ -1,13 +1,12 @@
 package tools
 
 import (
-	"errors"
-	"fmt"
 	"math/rand"
 	"strconv"
 	"time"
 )
 
+//自定义错误格式
 type weError struct {
 	errorNo int
 	e       string
@@ -27,11 +26,6 @@ func GetErrorNo(e error) int {
 	} else {
 		return 0
 	}
-}
-
-func Error(formatstring string, a ...interface{}) error {
-	errstr := fmt.Sprintf(formatstring, a...)
-	return errors.New(errstr)
 }
 
 //随机数
