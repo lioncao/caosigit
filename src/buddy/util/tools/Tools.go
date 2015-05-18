@@ -40,3 +40,10 @@ func GetTimeDay() int32 {
 	port, _ := strconv.Atoi(s)
 	return int32(port)
 }
+
+func GetTimeMonth() int32 {
+	t := time.Now()
+	s := t.Format("200601") //20141105格式
+	port, _ := strconv.Atoi(s)
+	return int32(port)
+}
