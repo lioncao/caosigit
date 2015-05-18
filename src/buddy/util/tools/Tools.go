@@ -28,10 +28,20 @@ func GetErrorNo(e error) int {
 	}
 }
 
-//随机数
+// 随机数
+// 在 [0, Max)的左闭右开区间中取随机数
 func GetRand(Max int) int {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	return r.Intn(Max)
+}
+
+// 随机数2
+// 在 [min, max]的闭区间中取随机数
+func GetRand2(min int, max int) int {
+	if min > max {
+		min, max = max, min
+	}
+	return GetRand(max-min+1) + min
 }
 
 func GetTimeDay() int32 {

@@ -1,4 +1,0 @@
-require "lfs"
-
-
-print("haha")

@@ -1,45 +1,173 @@
 #!/bin/bash
 
-build_dir(){
-	cur_dir=$1
-	cur_build_name=$2
+
+# echo "==================================="
+# go install 3rdparty
+
+# echo "==================================="
+# go install 3rdparty/goArrayList
+
+# echo "==================================="
+# go install 3rdparty/goArrayList/goArrayList
+
+# echo "==================================="
+# go install 3rdparty/ssdb
 
 
-	# echo "10 $0  11 $1  12 $2"
-
-	cd $cur_dir
-
-	if [ "x$cur_build_name" != "x" ]; then
-		go_file_list=$(ls | grep *.go)
-		if [ "$go_file_list"x != ""x ]; then			
-			echo "go install $cur_build_name"
-			go install $cur_build_name
-
-		fi	
-	fi
 
 
-	dirList=$(ls -d)
-	echo "$dirList"
-	for d in $dirList; do
-		if [ "x$d" != "x." ]; then			
-			echo $d
-			if [ "x$cur_build_name" != "x" ]; then
-				next_build_name="$cur_build_name/$d"
-			else
-				next_build_name="$d"
-			fi
-			next_dir="$cur_dir/$d"
-			build_dir $next_dir $next_build_name
-		fi
-		break
-	done	
-	return
-}
+# echo "==================================="
+# go install buddy
 
-cd ../src
-# 源代码根目录
-BUILD_NAME=""
-SRC_DIR_FULL=$(pwd)
-echo "00 $BUILD_NAME 01 $SRC_DIR_FULL"
-build_dir $SRC_DIR_FULL $BUILD_NAME
+# echo "==================================="
+# go install buddy/util
+
+
+
+# echo "==================================="
+# go install buddy/util/db
+
+echo "==================================="
+go install buddy/util/db/mongodb
+
+# echo "==================================="
+# go install buddy/util/db/redis
+
+echo "==================================="
+go install buddy/util/network
+
+echo "==================================="
+go install buddy/util/tools
+
+# echo "==================================="
+# go install code.google.com
+
+# echo "==================================="
+# go install code.google.com/p
+
+# echo "==================================="
+# go install code.google.com/p/goprotobuf
+
+# echo "==================================="
+# go install code.google.com/p/goprotobuf/lib
+
+# echo "==================================="
+# go install code.google.com/p/goprotobuf/lib/codereview
+
+echo "==================================="
+go install code.google.com/p/goprotobuf/proto
+
+echo "==================================="
+go install code.google.com/p/goprotobuf/proto/testdata
+
+echo "==================================="
+go install code.google.com/p/goprotobuf/protoc-gen-go
+
+echo "==================================="
+go install code.google.com/p/goprotobuf/protoc-gen-go/descriptor
+
+echo "==================================="
+go install code.google.com/p/goprotobuf/protoc-gen-go/generator
+
+echo "==================================="
+go install code.google.com/p/goprotobuf/protoc-gen-go/plugin
+
+echo "==================================="
+go install code.google.com/p/goprotobuf/protoc-gen-go/testdata
+
+# echo "==================================="
+# go install code.google.com/p/goprotobuf/protoc-gen-go/testdata/multi
+
+echo "==================================="
+go install code.google.com/p/goprotobuf/protoc-gen-go/testdata/my_test
+
+# echo "==================================="
+# go install code.google.com/p/go-uuid
+
+# echo "==================================="
+# go install code.google.com/p/go-uuid/lib
+
+# echo "==================================="
+# go install code.google.com/p/go-uuid/lib/codereview
+
+echo "==================================="
+go install code.google.com/p/go-uuid/uuid
+
+# echo "==================================="
+# go install github.com
+
+# echo "==================================="
+# go install github.com/alphazero
+
+echo "==================================="
+go install github.com/alphazero/Go-Redis
+
+# echo "==================================="
+# go install github.com/alphazero/Go-Redis/bench
+
+# echo "==================================="
+# go install github.com/alphazero/Go-Redis/compliance
+
+# echo "==================================="
+# go install github.com/alphazero/Go-Redis/examples
+
+# echo "==================================="
+# go install github.com/alphazero/Go-Redis/test
+
+# echo "==================================="
+# go install github.com/alphazero/Go-Redis/test/gen
+
+# echo "==================================="
+# go install github.com/garyburd
+
+# echo "==================================="
+# go install github.com/garyburd/redigo
+
+echo "==================================="
+go install github.com/garyburd/redigo/redis
+
+echo "==================================="
+go install github.com/garyburd/redigo/redisx
+
+# echo "==================================="
+# go install github.com/go-sql-driver
+
+# echo "==================================="
+# go install github.com/go-sql-driver/mysql
+
+# echo "==================================="
+# go install github.com/icattlecoder
+
+echo "==================================="
+go install github.com/icattlecoder/godaemon
+
+echo "==================================="
+go install github.com/icattlecoder/godaemon/example
+
+# echo "==================================="
+# go install github.com/vmihailenco
+
+echo "==================================="
+go install github.com/vmihailenco/bufio
+
+echo "==================================="
+go install github.com/vmihailenco/msgpack
+
+# echo "==================================="
+# go install gopkg.in
+
+echo "==================================="
+go install gopkg.in/mgo.v2
+
+echo "==================================="
+go install gopkg.in/mgo.v2/bson
+
+# echo "==================================="
+# go install gopkg.in/mgo.v2/sasl
+
+# echo "==================================="
+# go install gopkg.in/mgo.v2/testdb
+
+echo "==================================="
+go install gopkg.in/mgo.v2/txn
+

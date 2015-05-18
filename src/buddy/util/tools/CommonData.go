@@ -172,8 +172,8 @@ func (this *CommonJsonData) ParseInt64(index int, fieldName string) int64 {
 
 	value = this.getValue(index, fieldName)
 	if value == "" {
-		ShowWarnning("CommonJsonData.ParseInt64() get empty value , fileName=", Color(CL_YELLOW, this.FileName),
-			",index=", index, ",fieldName=", fieldName, ",ID=", this.getValue(index, "ID"))
+		// ShowWarnning("CommonJsonData.ParseInt64() get empty value , fileName=", Color(CL_YELLOW, this.FileName),
+		// 	",index=", index, ",fieldName=", fieldName, ",ID=", this.getValue(index, "ID"))
 		return 0
 	}
 
@@ -195,8 +195,8 @@ func (this *CommonJsonData) ParseFloat64(index int, fieldName string) float64 {
 
 	value = this.getValue(index, fieldName)
 	if value == "" {
-		ShowWarnning("CommonJsonData.ParseFloat64() get empty value , fileName=", Color(CL_YELLOW, this.FileName),
-			",index=", index, ",fieldName=", fieldName, ",ID=", this.getValue(index, "ID"))
+		// ShowWarnning("CommonJsonData.ParseFloat64() get empty value , fileName=", Color(CL_YELLOW, this.FileName),
+		// 	",index=", index, ",fieldName=", fieldName, ",ID=", this.getValue(index, "ID"))
 		return 0.0
 	}
 
@@ -218,8 +218,8 @@ func (this *CommonJsonData) ParseBool(index int, fieldName string) bool {
 
 	value = this.getValue(index, fieldName)
 	if value == "" {
-		ShowWarnning("CommonJsonData.ParseBool() get empty value , fileName=", Color(CL_YELLOW, this.FileName),
-			",index=", index, ",fieldName=", fieldName, ",ID=", this.getValue(index, "ID"))
+		// ShowWarnning("CommonJsonData.ParseBool() get empty value , fileName=", Color(CL_YELLOW, this.FileName),
+		// 	",index=", index, ",fieldName=", fieldName, ",ID=", this.getValue(index, "ID"))
 		return false
 	}
 
