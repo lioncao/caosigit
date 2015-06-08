@@ -1,32 +1,13 @@
 package tools
 
 import (
+	"encoding/xml"
+	"io/ioutil"
 	"math/rand"
+	"os"
 	"strconv"
 	"time"
 )
-
-//自定义错误格式
-type weError struct {
-	errorNo int
-	e       string
-}
-
-func (this *weError) Error() string {
-	return this.e
-}
-
-func NewError(errorNo int) error {
-	return &weError{errorNo: errorNo}
-}
-
-func GetErrorNo(e error) int {
-	if serr, ok := e.(*weError); ok {
-		return serr.errorNo
-	} else {
-		return 0
-	}
-}
 
 // 随机数
 // 在 [0, Max)的左闭右开区间中取随机数
@@ -62,4 +43,20 @@ func GetTimeMonth() int32 {
 	s := t.Format("200601") //20141105格式
 	port, _ := strconv.Atoi(s)
 	return int32(port)
+}
+
+func LoadXmlFile(filename string, v interface{}) error {
+	f, err := os.Open(filename)
+	if err != nil {
+		return err
+	}
+	data, err := ioutil.ReadAll(f)
+	if err != nil {
+		return err
+	}
+	err = xml.Unmarshal(data, &v)
+	if err != nil {
+		return err
+	}
+	return nil
 }
