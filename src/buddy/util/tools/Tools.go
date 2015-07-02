@@ -1,6 +1,7 @@
 package tools
 
 import (
+	"encoding/json"
 	"encoding/xml"
 	"io/ioutil"
 	"math/rand"
@@ -55,6 +56,22 @@ func LoadXmlFile(filename string, v interface{}) error {
 		return err
 	}
 	err = xml.Unmarshal(data, &v)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func LoadJsonFile(filename string, v interface{}) error {
+	f, err := os.Open(filename)
+	if err != nil {
+		return err
+	}
+	data, err := ioutil.ReadAll(f)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(data, &v)
 	if err != nil {
 		return err
 	}
