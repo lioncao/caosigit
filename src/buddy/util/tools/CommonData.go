@@ -277,6 +277,9 @@ func (this *CommonJsonData) ParseBool(index int, fieldName string) bool {
 // 从数据集中解析出一个 string
 func (this *CommonJsonData) ParseStrSlince(index int, fieldName string) []string {
 	value := this.getValue(index, fieldName)
+	if value == "" {
+		return []string{}
+	}
 	strs := strings.Split(value, this.sep)
 	count := len(strs)
 	for i := 0; i < count; i++ {
