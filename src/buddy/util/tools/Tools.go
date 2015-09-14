@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"os"
-	"strconv"
 	"time"
 )
 
@@ -24,26 +23,6 @@ func GetRand2(min int, max int) int {
 		min, max = max, min
 	}
 	return GetRand(max-min+1) + min
-}
-
-func GetTimeDay() int32 {
-	t := time.Now()
-	s := t.Format("20060102") //20141105格式
-	port, _ := strconv.Atoi(s)
-	return int32(port)
-}
-
-func GetDayByTime(t time.Time) int32 {
-	s := t.Format("20060102") //20141105格式
-	port, _ := strconv.Atoi(s)
-	return int32(port)
-}
-
-func GetTimeMonth() int32 {
-	t := time.Now()
-	s := t.Format("200601") //20141105格式
-	port, _ := strconv.Atoi(s)
-	return int32(port)
 }
 
 func LoadXmlFile(filename string, v interface{}) error {
