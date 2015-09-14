@@ -10,6 +10,49 @@ import (
 )
 
 ////////////////////////////////////////////////////////////////////////////////
+// 数据解析基础函数
+////////////////////////////////////////////////////////////////////////////////
+func _parse_S(s string) (string, bool) {
+	return s, true
+}
+
+func _parse_I(s string) (int64, bool) {
+	r, e := strconv.ParseInt(s, 0, 64)
+	if e != nil {
+		return 0, false
+	}
+	return r, true
+}
+
+func _parse_SV(s, sep string) ([]string, bool) {
+	if s == "" {
+		return []string{}, true
+	}
+	strs := strings.Split(s, sep)
+	count := len(strs)
+	for i := 0; i < count; i++ {
+		strs[i] = strings.TrimSpace(strs[i])
+	}
+	return strs, true
+}
+func _parse_IV(s, sep string) ([]int64, bool) {
+	strs, ok := _parse_SV(s, sep)
+	count := len(strs)
+	ints := make([]int64, count)
+	for i := 0; i < count; i++ {
+		ints[i], _ = strconv.ParseInt(strs[i], 0, 64)
+	}
+	return ints, ok
+}
+func _parse_B(s string) (bool, bool) {
+	r, e := strconv.ParseBool(s)
+	if e != nil {
+		return false, false
+	}
+	return r, true
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // 通用db相关数据结构
 ////////////////////////////////////////////////////////////////////////////////
 type CommonJsonDataPool struct {
