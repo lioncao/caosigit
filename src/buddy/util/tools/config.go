@@ -3,6 +3,7 @@ package tools
 import (
 	"bufio"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -48,6 +49,19 @@ func (this *configMgr) Get(section, key string) (string, bool) {
 
 	}
 	return "", false
+}
+
+func (this *configMgr) GetInt(section, key string) (int64, bool) {
+	s, ok := this.Get(section, key)
+	if ok {
+		i, e := strconv.ParseInt(s, 0, 64)
+		if e != nil {
+			return 0, false
+		}
+		return i, true
+
+	}
+	return 0, false
 }
 
 func (this *configMgr) PraseString(content string) {
