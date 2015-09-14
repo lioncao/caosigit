@@ -6,13 +6,14 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 )
 
 ////////////////////////////////////////////////////////////////////////////////
 // 通用db相关数据结构
 ////////////////////////////////////////////////////////////////////////////////
 type CommonJsonDataPool struct {
-	datas map[string]*CommonJsonData
+	datas map[string]*CommonJsonData // 原始数据
 }
 
 func (this *CommonJsonDataPool) Init() {
@@ -39,15 +40,44 @@ func (this *CommonJsonDataPool) Get(key string) *CommonJsonData {
 }
 
 type CommonData struct {
-	strs      map[string]string
-	strSlince map[string][]string
+	strs       map[string]string
+	strSlinces map[string][]string
 
 	ints       map[string]int64
 	intSlinces map[string][]int64
+
+	bools map[string]bool
+}
+
+func NewCommonData() *CommonData {
+	this := new(CommonData)
+	this.strs = make(map[string]string)
+	this.strSlinces = make(map[string][]string)
+	this.ints = make(map[string]int64)
+	this.intSlinces = make(map[string][]int64)
+	this.bools = make(map[string]bool)
+	return this
+}
+
+func (this *CommonData) I(key string) int64 {
+	return this.ints[key]
+}
+func (this *CommonData) S(key string) string {
+	return this.strs[key]
+}
+func (this *CommonData) B(key string) bool {
+	return this.bools[key]
+}
+func (this *CommonData) IV(key string) []int64 {
+	return this.intSlinces[key]
+}
+func (this *CommonData) SV(key string) []string {
+	return this.strSlinces[key]
 }
 
 // 统一数据格式, 对应data.json
 type CommonJsonData struct {
+	sep      string     // vector的分割符号
 	FileName string     `json:"-"`      // 原始文件的名字
 	JsonStr  string     `json:"-"`      // 原始的json字符串
 	Fields   []string   `json:"fields"` // 数据名称列表
@@ -65,6 +95,17 @@ type CommonJsonData struct {
 func NewCommonJsonData() *CommonJsonData {
 	this := new(CommonJsonData)
 	// this.FieldNameMap = new(map[string]int)
+	this.sep = "|"
+	return this
+}
+
+func NewCommonJsonDataFromFile(filename string) *CommonJsonData {
+	this := NewCommonJsonData()
+	err := this.DecodeJsonFile(filename)
+	if err != nil {
+		ShowError(err)
+		return nil
+	}
 	return this
 }
 
@@ -233,49 +274,65 @@ func (this *CommonJsonData) ParseBool(index int, fieldName string) bool {
 	return b
 }
 
-// func (this *CommonJsonData) ToCommDataList() []*CommonData {
-// 	count := this.DataCount
-// 	fieldCnt := this.FieldCount
+// 从数据集中解析出一个 string
+func (this *CommonJsonData) ParseStrSlince(index int, fieldName string) []string {
+	value := this.getValue(index, fieldName)
+	if value == "" {
+		return []string{}
+	}
+	strs := strings.Split(value, this.sep)
+	count := len(strs)
+	for i := 0; i < count; i++ {
+		strs[i] = strings.TrimSpace(strs[i])
+	}
+	return strs
+}
 
-// 	list := make([]*CommonData, count)
+func (this *CommonJsonData) ParseInt64Slince(index int, fieldName string) []int64 {
+	strs := this.ParseStrSlince(index, fieldName)
+	count := len(strs)
 
-// 	// FileName string     `json:"-"`      // 原始文件的名字
-// 	// JsonStr  string     `json:"-"`      // 原始的json字符串
-// 	// Fields   []string   `json:"fields"` // 数据名称列表
-// 	// Types    []string   `json:"types"`  // 数据类型列表
-// 	// Values   [][]string `json:"values"` // 数据表
-// 	// ValueBuf [][]byte   `json:"-"`      // 每个value对应的json字符串(相当于预先打包好的单条数据的jsonStr)
+	ints := make([]int64, count)
+	for i := 0; i < count; i++ {
+		ints[i], _ = strconv.ParseInt(strs[i], 0, 64)
+	}
+	return ints
+}
 
-// 	// // 辅助数据
-// 	// DataCount    int            `json:"-"` // 数据总条数
-// 	// FieldNameMap map[string]int `json:"-"` // 数据名称到数据下标的映射
-// 	// FieldCount   int            `json:"-"` // 一条数据的数据个数
-// 	var (
-// 		fieldName string
-// 		typeName  string
-// 		cd        *CommonData
-// 	)
-// 	for i := 0; i < count; i++ {
-// 		cd = new(CommonData)
+func (this *CommonJsonData) ToCommDataList() []*CommonData {
+	count := this.DataCount
+	fieldCnt := this.FieldCount
 
-// 		for j := 0; j < fieldCnt; j++ {
-// 			fieldName = this.Fields[j]
-// 			typeName = this.Types[j]
-// 			switch typeName {
-// 			case "I":
-// 				cd.ints[fieldName] = this.ParseInt64(i, fieldName)
-// 			case "S":
-// 				cd.strs[fieldName] = this.ParseString(i, fieldName)
-// 			case "IV":
-// 			case "SV":
-// 			case "B":
-// 				// cd.strs[fieldName] = this.ParseBool(i, fieldName)
-// 			}
-// 		}
-// 	}
+	list := make([]*CommonData, count)
+	var (
+		fieldName string
+		typeName  string
+		cd        *CommonData
+	)
 
-// 	return list
-// }
+	for i := 0; i < count; i++ {
+		cd = NewCommonData()
+		list[i] = cd
+		for j := 0; j < fieldCnt; j++ {
+			fieldName = this.Fields[j]
+			typeName = this.Types[j]
+			switch typeName {
+			case "I":
+				cd.ints[fieldName] = this.ParseInt64(i, fieldName)
+			case "S":
+				cd.strs[fieldName] = this.ParseString(i, fieldName)
+			case "IV":
+				cd.intSlinces[fieldName] = this.ParseInt64Slince(i, fieldName)
+			case "SV":
+				cd.strSlinces[fieldName] = this.ParseStrSlince(i, fieldName)
+			case "B":
+				cd.bools[fieldName] = this.ParseBool(i, fieldName)
+			}
+		}
+	}
+
+	return list
+}
 
 func (this *CommonJsonData) Print() {
 	ShowDebug(fmt.Sprintf("\n\n-----start print file \"%s\"------------------------", this.FileName))
