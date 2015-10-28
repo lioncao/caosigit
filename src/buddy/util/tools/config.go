@@ -2,6 +2,7 @@ package tools
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -11,6 +12,10 @@ type configMgr struct {
 	MainData    map[string]map[string]string
 	ServiceData []map[string]string
 	curSection  string
+}
+
+type ConfigMgr struct {
+	configMgr
 }
 
 func (this *configMgr) Load(path string) error {
@@ -102,6 +107,36 @@ func (this *configMgr) PraseString(content string) {
 	}
 }
 
+func (this *configMgr) EnsureInt(section, key string, defaultValue int64) int64 {
+	v, ok := this.GetInt(section, key)
+	if ok {
+		return v
+	} else {
+		return defaultValue
+	}
+}
+
+func (this *configMgr) EnsureString(section, key string, defaultValue string) string {
+	v, ok := this.Get(section, key)
+	if ok {
+		return v
+	} else {
+		return defaultValue
+	}
+}
+
+// 打印所有的配置项
+func (this *configMgr) Print() {
+	for gname, gdata := range this.MainData {
+		fmt.Println(Color(CL_YELLOW, gname))
+		for key, value := range gdata {
+			fmt.Println("    ", Color(CL_GREEN, key), value)
+		}
+		fmt.Println("")
+	}
+
+}
+
 var config_intanse *configMgr
 
 func GetConfigMgr() *configMgr {
@@ -109,4 +144,8 @@ func GetConfigMgr() *configMgr {
 		config_intanse = new(configMgr)
 	}
 	return config_intanse
+}
+
+func NewConfigMgr() *ConfigMgr {
+	return new(ConfigMgr)
 }
