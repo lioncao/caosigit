@@ -27,7 +27,7 @@ list="$list code.google.com/p/goprotobuf/protoc-gen-go"
 list="$list code.google.com/p/goprotobuf/protoc-gen-go/descriptor"
 list="$list code.google.com/p/goprotobuf/protoc-gen-go/generator"
 list="$list code.google.com/p/goprotobuf/protoc-gen-go/plugin"
-list="$list code.google.com/p/goprotobuf/protoc-gen-go/testdata"
+# list="$list code.google.com/p/goprotobuf/protoc-gen-go/testdata"
 # list="$list code.google.com/p/goprotobuf/protoc-gen-go/testdata/multi"
 list="$list code.google.com/p/goprotobuf/protoc-gen-go/testdata/my_test"
 # list="$list code.google.com/p/go-uuid"
@@ -64,8 +64,10 @@ list="$list gopkg.in/mgo.v2/txn"
 for name in $list; do
 	go install $name
 	if [[ $? -ne 0 ]]; then
+		echo "=========================================="
 		echo "install failed $name"
-		exit 0
+		echo "=========================================="
+		# exit 0
 	else
 		echo "install ok $name"
 	fi
