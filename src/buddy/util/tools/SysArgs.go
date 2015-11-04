@@ -22,7 +22,7 @@ type SysArgs struct {
 ///////////////////////////////////////////////////////////////////////////
 // 设置和获取使用说明
 func (this *SysArgs) SetUsage(usage string) {
-	this.usage = this.usage
+	this.usage = usage
 }
 
 func (this *SysArgs) Usage() string {
@@ -86,6 +86,14 @@ func (this *SysArgs) Values(name string) []string {
 		return data.paras
 	}
 	return nil
+}
+
+func (this *SysArgs) HasValue(name string) bool {
+	data := this.datas[name]
+	if data != nil {
+		return true
+	}
+	return false
 }
 
 // 获取指定参数的单个后续数据(字符串)

@@ -19,7 +19,10 @@ type ConfigMgr struct {
 }
 
 func (this *configMgr) Load(path string) error {
-	this.MainData = make(map[string]map[string]string)
+	if this.MainData == nil {
+		this.MainData = make(map[string]map[string]string)
+	}
+
 	f, err := os.Open(path)
 	defer f.Close()
 	if err != nil {

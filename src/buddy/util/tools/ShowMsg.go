@@ -110,10 +110,40 @@ const (
 )
 
 // 打印标记
-var showFlags int64 = flag_SHOW_INFO | flag_SHOW_DEBUG | flag_SHOW_WARNNING | flag_SHOW_ERROR
+var (
+	showFlags         int64 = flag_SHOW_INFO | flag_SHOW_DEBUG | flag_SHOW_WARNNING | flag_SHOW_ERROR
+	showFlag_info           = true
+	showFlag_debug          = true
+	showFlag_warnning       = true
+	showFlag_error          = true
+)
 
 func SetShowFlag(flags int64) {
 	showFlags = flags
+
+	if (showFlags & flag_SHOW_INFO) != 0 {
+		showFlag_info = true
+	} else {
+		showFlag_info = false
+	}
+
+	if (showFlags & flag_SHOW_DEBUG) != 0 {
+		showFlag_debug = true
+	} else {
+		showFlag_debug = false
+	}
+
+	if (showFlags & flag_SHOW_WARNNING) != 0 {
+		showFlag_warnning = true
+	} else {
+		showFlag_warnning = false
+	}
+
+	if (showFlags & flag_SHOW_ERROR) != 0 {
+		showFlag_error = true
+	} else {
+		showFlag_error = false
+	}
 }
 
 func TimeString(timeValue int64) string {
@@ -141,29 +171,52 @@ func TimeDigitValue(sec int64, timeFmt string) int64 {
 }
 
 func ShowInfo(a ...interface{}) {
-	if (showFlags & flag_SHOW_INFO) != 0 {
+	if showFlag_info {
 		fmt.Println(SHOW_TITLE_INFO, TimeString(EMPTY_TIME), a)
 	}
 }
+func ShowInfoF(fmtStr string, a ...interface{}) {
+	if showFlag_info {
+		fmt.Println(SHOW_TITLE_INFO, TimeString(EMPTY_TIME), fmt.Sprintf(fmtStr, a))
+	}
+}
 func ShowDebug(a ...interface{}) {
-	if (showFlags & flag_SHOW_DEBUG) != 0 {
+	if showFlag_debug {
 		fmt.Println(SHOW_TITLE_DEBUG, TimeString(EMPTY_TIME), a)
 	}
 }
 
+func ShowDebugF(fmtStr string, a ...interface{}) {
+	if showFlag_debug {
+		fmt.Println(SHOW_TITLE_DEBUG, TimeString(EMPTY_TIME), fmt.Sprintf(fmtStr, a))
+	}
+}
+
 func ShowWarnning(a ...interface{}) {
-	if (showFlags & flag_SHOW_WARNNING) != 0 {
+	if showFlag_warnning {
 		fmt.Println(SHOW_TITLE_WARNNING, TimeString(EMPTY_TIME), a)
+	}
+}
+func ShowWarnningF(fmtStr string, a ...interface{}) {
+	if showFlag_warnning {
+		fmt.Println(SHOW_TITLE_WARNNING, TimeString(EMPTY_TIME), fmt.Sprintf(fmtStr, a))
 	}
 }
 
 func ShowError(a ...interface{}) {
-	if (showFlags & flag_SHOW_ERROR) != 0 {
+	if showFlag_error {
 		fmt.Println(SHOW_TITLE_ERROR, TimeString(EMPTY_TIME), a)
 	}
 }
+
+func ShowErrorF(fmtStr string, a ...interface{}) {
+	if showFlag_error {
+		fmt.Println(SHOW_TITLE_ERROR, TimeString(EMPTY_TIME), fmt.Sprintf(fmtStr, a))
+	}
+}
+
 func CaoSiShowDebug(a ...interface{}) {
-	if (showFlags & flag_SHOW_DEBUG) != 0 {
+	if showFlag_debug {
 		fmt.Println(CL_CYAN+"[CAOSI_DEBUG]"+CL_RESET, TimeString(EMPTY_TIME), a)
 	}
 }
