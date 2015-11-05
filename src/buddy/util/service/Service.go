@@ -182,7 +182,7 @@ func (this *ServiceSuper) DoTcp(conn net.Conn) error {
 
 func (this *ServiceSuper) OnSig(sig os.Signal) {
 	info := this.GetInfo()
-	tools.ShowInfo("service", info.Name, "OnSig", sig)
+	tools.ShowInfo("ServiceSuper: service", info.Name, "OnSig", sig)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
