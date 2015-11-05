@@ -207,6 +207,13 @@ func (this *ServiceManager) LoadConfig(cfgName string) error {
 	return err
 }
 
+// // 从通用配置数据中初始化配置信息
+// func (this *ServiceManager) InitConfig(services []map[string][string]) error {
+// 	var err error
+// 	this.Conf, err = LoadServerConfig(cfgName)
+// 	return err
+// }
+
 // 启动各项服务
 func (this *ServiceManager) StartServices(factoryFunc ServiceCreateFunc) error {
 
