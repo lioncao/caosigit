@@ -6,6 +6,7 @@ import (
 	"buddy/util/tools"
 	"fmt"
 	"net"
+	"os"
 	"time"
 )
 
@@ -14,6 +15,8 @@ const (
 	OPEN               = 1
 	CLOSE              = 0
 	DEFAULT_HEART_BEAT = time.Millisecond * 50
+
+	CFG_DOMAIN_GLOBAL = "global"
 )
 
 // 服务器的运行状态
@@ -58,6 +61,7 @@ type Service interface {
 	DoCmd(session *cmd.CmdSession, cmdData *cmd.CmdData) error // 命令行响应
 	SetRuntimeState(state int) int                             // 状态设置
 	GetRuntimeState() int                                      // 状态检查
+	OnSig(sig os.Signal)                                       // 系统信号处理
 }
 
 // service实现的基类
@@ -176,6 +180,11 @@ func (this *ServiceSuper) DoTcp(conn net.Conn) error {
 	return nil
 }
 
+func (this *ServiceSuper) OnSig(sig os.Signal) {
+	info := this.GetInfo()
+	tools.ShowInfo("service", info.Name, "OnSig", sig)
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // ServiceSuper 基本功能实现 end
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -201,18 +210,30 @@ func (this *ServiceManager) Init(factoryFunc ServiceCreateFunc) error {
 	return nil
 }
 
-func (this *ServiceManager) LoadConfig(cfgName string) error {
-	var err error
-	this.Conf, err = LoadServerConfig(cfgName)
-	return err
-}
-
-// // 从通用配置数据中初始化配置信息
-// func (this *ServiceManager) InitConfig(services []map[string][string]) error {
+// func (this *ServiceManager) LoadConfig(cfgName string) error {
 // 	var err error
 // 	this.Conf, err = LoadServerConfig(cfgName)
 // 	return err
 // }
+
+// 从通用配置数据中初始化配置信息
+func (this *ServiceManager) InitConfig(cfgMgr *tools.ConfigMgr) error {
+	var (
+		info *ServiceInfo
+	)
+
+	this.Conf.ServerName = cfgMgr.EnsureString(CFG_DOMAIN_GLOBAL, "server_name", "")
+	this.Conf.DebugMode = cfgMgr.EnsureBool(CFG_DOMAIN_GLOBAL, "debug_mode", false)
+	this.Conf.GOMAXPROCS = int(cfgMgr.EnsureInt(CFG_DOMAIN_GLOBAL, "cpunum", 0))
+	services := cfgMgr.GetServiceData()
+	for _, service_params := range services {
+		info = new(ServiceInfo)
+		info.Init(service_params)
+		this.Conf.Services = append(this.Conf.Services, info)
+	}
+
+	return nil
+}
 
 // 启动各项服务
 func (this *ServiceManager) StartServices(factoryFunc ServiceCreateFunc) error {
@@ -238,7 +259,7 @@ func (this *ServiceManager) StartServices(factoryFunc ServiceCreateFunc) error {
 
 	// 遍历服务器信息
 	for i := 0; i < sNum; i++ {
-		sInfo = &list[i]
+		sInfo = list[i]
 
 		k = sInfo.Name
 		s = this.Get(k)
@@ -304,6 +325,12 @@ func (this *ServiceManager) StartCmd(ip, port, password, title string) error {
 
 func (this *ServiceManager) DoCmd(session *cmd.CmdSession, cmdData *cmd.CmdData) error {
 	return nil
+}
+
+func (this *ServiceManager) OnSig(sig os.Signal) {
+	for _, service := range this.sMap {
+		(*service).OnSig(sig)
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

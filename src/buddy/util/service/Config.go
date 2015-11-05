@@ -2,7 +2,6 @@ package service
 
 import (
 	"buddy/util/tools"
-	"encoding/xml"
 	"fmt"
 	"runtime"
 	"strconv"
@@ -10,26 +9,34 @@ import (
 
 // 整个服务器的配置信息
 type ServerConfig struct {
-	ServerName           string
-	Version              string
-	DebugMode            bool
-	IP                   string
-	Port                 string
-	Services             []ServiceInfo `xml:"Service"`
-	GOMAXPROCS           int           // 允许使用的最大cpu数量
-	CommonConfigFileName string        // 通用配置所在文件
+	ServerName           string         // 整个服务器的名称
+	Version              string         // 版本号
+	DebugMode            bool           // 调试模式标记
+	Services             []*ServiceInfo // 内部服务的具体配置信息
+	GOMAXPROCS           int            // 允许使用的最大cpu数量
+	CommonConfigFileName string         // 通用配置所在文件
 }
 
 // 每个service的配置信息
 type ServiceInfo struct {
-	XMLName     xml.Name `xml:"Service"`
-	Type        string
-	Name        string
-	ConfigFile  string
-	Params      string
-	DebugMode   bool
-	Description string
-	Status      int32
+	Params      tools.MapString // 原始参数列表
+	Type        string          // 类型
+	Name        string          // 名称
+	ConfigFile  string          // 主配置文件
+	DebugMode   bool            // 调试模式标记
+	Description string          // 文字描述
+	Status      int32           // 运行状态
+}
+
+func (this *ServiceInfo) Init(params map[string]string) {
+	this.Params = tools.MapString(params)
+
+	this.Type = this.Params.EnsureString("type", "")
+	this.Name = this.Params.EnsureString("name", "")
+	this.ConfigFile = this.Params.EnsureString("config_file", "")
+	this.DebugMode = this.Params.EnsureBool("debug_mode", false)
+	this.Description = this.Params.EnsureString("desc", "")
+	this.Status = int32(this.Params.EnsureInt64("status", 0))
 }
 
 // 获取指定Service的配置参数
@@ -37,7 +44,7 @@ func (this *ServerConfig) GetServiceInfo(serviceName string) *ServiceInfo {
 
 	for _, v := range this.Services {
 		if v.Name == serviceName {
-			return &v
+			return v
 		}
 	}
 	return nil
@@ -61,9 +68,6 @@ func (this *ServerConfig) PrintConfigInfo() {
 
 	// 服务器名称以及版本号
 	tools.ShowInfo(""+this.ServerName, "(", this.Version, ")")
-
-	// 服务器监听情况
-	tools.ShowInfo("Listen Addr\t", this.IP+":"+this.Port)
 
 	// 调试模式开关
 	if this.DebugMode {
@@ -105,7 +109,7 @@ func (this *ServerConfig) PrintConfigInfo() {
 
 			tools.ShowInfo(fmt.Sprintf(fmtStr, strconv.FormatInt(int64(k), 10), v.Name+debugDesc, st, v.ConfigFile, v.Params, v.Description))
 		} else {
-			tools.ShowInfo("Service\t", k, "\t", v.Name+debugDesc, "\t", st+"\t", v.ConfigFile+"\t", v.Params+"\t", v.Description)
+			tools.ShowInfo("Service\t", k, "\t", v.Name+debugDesc, "\t", st+"\t", v.ConfigFile+"\t", v.Description)
 		}
 	}
 	tools.ShowInfo("Service Count:\t", count, "\t\t\t")

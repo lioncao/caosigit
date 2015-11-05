@@ -81,7 +81,7 @@ func (this *configMgr) GetSection(s string) map[string]string {
 	}
 }
 
-func (this *configMgr) GetServiceData(s string) []map[string]string {
+func (this *configMgr) GetServiceData() []map[string]string {
 	return this.ServiceData
 }
 
@@ -121,6 +121,7 @@ func (this *configMgr) GetBool(section, key string) (bool, bool) {
 
 func (this *configMgr) PraseString(content string) {
 	realStr := strings.TrimSpace(content)
+	// realStr := strings.Trim(content, cutset)
 	if realStr == "" || realStr[0] == '#' {
 		return
 	} else {
@@ -137,9 +138,13 @@ func (this *configMgr) PraseString(content string) {
 			}
 			this.curSection = section
 		} else {
-			if strings.Contains(realStr, "=") {
-				kv := strings.Split(realStr, "=")
+			idx := strings.Index(realStr, "=")
+			if idx > 0 {
+				kv := strings.SplitN(realStr, "=", 2)
 				if len(kv) == 2 {
+					for i := 0; i < 2; i++ {
+						kv[i] = strings.TrimSpace(kv[i])
+					}
 					if strings.EqualFold(this.curSection, _CONFIG_SECTION_SERVICE) {
 						sm := this.ServiceData[len(this.ServiceData)-1]
 						//fmt.Printf("serveric push s:%s key:%s v:%s\n", this.curSection, kv[0], kv[1])
