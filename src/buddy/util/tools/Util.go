@@ -24,7 +24,7 @@ func HttpSendSimplePage(w *http.ResponseWriter, code int, content string) {
 
 // 发送空返回
 func HttpSend200Empty(w *http.ResponseWriter) {
-	HttpSendSimplePage(w, 200, "empty")
+	HttpSendSimplePage(w, 200, "")
 }
 
 // 发送404页面
