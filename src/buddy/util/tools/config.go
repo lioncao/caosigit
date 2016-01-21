@@ -58,6 +58,7 @@ func (this *configMgr) Load(path string) error {
 	f, err := os.Open(path)
 	defer f.Close()
 	if err != nil {
+		ShowWarnning("configMgr load failed", path, err)
 		return err
 	}
 	r := bufio.NewReader(f)

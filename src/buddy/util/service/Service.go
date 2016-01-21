@@ -66,15 +66,14 @@ type Service interface {
 
 // service实现的基类
 type ServiceSuper struct {
-	ServiceInfo   ServiceInfo
-	ServiceConfig tools.CommonJsonData
-	TitleOnShow   string
-	RuntimeState  int
-	HeartBeat     time.Duration
-	DebugMod      bool   // 调试开关
-	ServerId      int64  // 服务器唯一id
-	ServerKey     string // 服务器key __Q:可能不需要这个东西
-	Language      string // 语言代码
+	ServiceInfo  ServiceInfo
+	TitleOnShow  string
+	RuntimeState int
+	HeartBeat    time.Duration
+	DebugMod     bool   // 调试开关
+	ServerId     int64  // 服务器唯一id
+	ServerKey    string // 服务器key __Q:可能不需要这个东西
+	Language     string // 语言代码
 
 	TcpCB bdsocket.TcpCallbacks
 }

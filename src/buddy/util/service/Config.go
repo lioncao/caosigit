@@ -19,13 +19,14 @@ type ServerConfig struct {
 
 // 每个service的配置信息
 type ServiceInfo struct {
-	Params      tools.MapString // 原始参数列表
-	Type        string          // 类型
-	Name        string          // 名称
-	ConfigFile  string          // 主配置文件
-	DebugMode   bool            // 调试模式标记
-	Description string          // 文字描述
-	Status      int32           // 运行状态
+	Params      tools.MapString  // 原始参数列表
+	Type        string           // 类型
+	Name        string           // 名称
+	ConfigFile  string           // 主配置文件
+	DebugMode   bool             // 调试模式标记
+	Description string           // 文字描述
+	Status      int32            // 运行状态
+	Configs     *tools.ConfigMgr // 配置信息
 }
 
 func (this *ServiceInfo) Init(params map[string]string) {
@@ -37,6 +38,11 @@ func (this *ServiceInfo) Init(params map[string]string) {
 	this.DebugMode = this.Params.EnsureBool("debug_mode", false)
 	this.Description = this.Params.EnsureString("desc", "")
 	this.Status = int32(this.Params.EnsureInt64("status", 0))
+
+	if this.ConfigFile != "" {
+		this.Configs = tools.NewConfigMgr()
+		this.Configs.Load(this.ConfigFile)
+	}
 }
 
 // 获取指定Service的配置参数
