@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/csv"
 	"fmt"
-	"github.com/tealeg/xlsx"
+	"github.com/tealeg_xlsx"
 	"os"
 	"path/filepath"
 	"strings"
@@ -34,10 +34,9 @@ func _dofile(path string, f os.FileInfo, err error) error {
 		return err
 	}
 	if f.IsDir() {
-		// println("dir", path, f.Name())
 		return nil
 	}
-	// println("file", path, f.Name())
+
 	name := f.Name()
 	strs := strings.Split(name, ".")
 	n := len(strs)
@@ -74,15 +73,6 @@ func _excel_to_csv(src_excel string) {
 	}
 
 	names := strings.Split(list[src_excel], ".")
-
-	for _, sheet := range xlFile.Sheets {
-		for _, row := range sheet.Rows {
-			for _, cell := range row.Cells {
-				s, _ := cell.String()
-				fmt.Printf("%s\n", s)
-			}
-		}
-	}
 
 	datas, _ := xlFile.ToSlice()
 
