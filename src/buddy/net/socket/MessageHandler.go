@@ -9,9 +9,9 @@
 package socket
 
 import (
+	"buddy/util/tools"
 	"net"
 	"time"
-	"ultralisk/tools"
 )
 
 const (

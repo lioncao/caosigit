@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"runtime"
+	"strconv"
 	"strings"
 )
 
@@ -23,7 +24,7 @@ func HttpSendSimplePage(w *http.ResponseWriter, code int, content string) {
 
 // 发送空返回
 func HttpSend200Empty(w *http.ResponseWriter) {
-	HttpSendSimplePage(w, 200, "empty")
+	HttpSendSimplePage(w, 200, "")
 }
 
 // 发送404页面
@@ -32,6 +33,9 @@ func HttpSend404NotFound(w *http.ResponseWriter) {
 }
 
 func Error(fmtStr string, a ...interface{}) error {
+	if a == nil {
+		return errors.New(fmtStr)
+	}
 	return errors.New(fmt.Sprintf(fmtStr, a))
 }
 
@@ -69,4 +73,40 @@ func DecodeLuaTableString(name string, tableStr string, data interface{}) error 
 		ShowError(name, err.Error(), tableStr, str)
 	}
 	return err
+}
+
+type MapString map[string]string
+
+func (this MapString) EnsureBool(key string, defaultValue bool) bool {
+	v, ok := this[key]
+	if !ok {
+		return defaultValue
+	}
+
+	r, e := strconv.ParseBool(v)
+	if e != nil {
+		return defaultValue
+	}
+	return r
+}
+
+func (this MapString) EnsureString(key string, defaultValue string) string {
+	v, ok := this[key]
+	if !ok {
+		return defaultValue
+	}
+	return v
+}
+
+func (this MapString) EnsureInt64(key string, defaultValue int64) int64 {
+	v, ok := this[key]
+	if !ok {
+		return defaultValue
+	}
+
+	r, e := strconv.ParseInt(v, 0, 64)
+	if e != nil {
+		return defaultValue
+	}
+	return r
 }
