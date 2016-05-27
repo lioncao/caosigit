@@ -1,6 +1,7 @@
 package main
 
 import (
+	"buddy/util/tools"
 	"bytes"
 	"encoding/csv"
 	"fmt"
@@ -11,8 +12,13 @@ import (
 )
 
 var list map[string]string
+var cfg ConfigMgr
 
 func main() {
+
+	// 读取配置文件
+	cfg.Load("main.conf")
+
 	list = make(map[string]string, 0)
 	_foreach_file("excels")
 
