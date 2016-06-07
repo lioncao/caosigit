@@ -100,11 +100,17 @@ const (
 	TIME_FMT           = "[06-01-02 15:04:05.000]"
 	TIME_FMT_DIGIT_DAY = "060102"
 	TIME_FMT_DIGIT_SEC = "060102030405"
+
 	// 信息题头
-	SHOW_TITLE_INFO     = CL_GREEN + "[INFO]" + CL_RESET
-	SHOW_TITLE_DEBUG    = CL_BLUE + "[DBUG]" + CL_RESET
-	SHOW_TITLE_WARNNING = CL_YELLOW + "[WARN]" + CL_RESET
-	SHOW_TITLE_ERROR    = CL_RED + "[ERRO]" + CL_RESET
+	show_TITLE_INFO_BASE     = "[INFO]"
+	show_TITLE_DEBUG_BASE    = "[DBUG]"
+	show_TITLE_WARNNING_BASE = "[WARN]"
+	show_TITLE_ERROR_BASE    = "[ERRO]"
+
+	show_TITLE_INFO_WITH_COLOR     = CL_GREEN + show_TITLE_INFO_BASE + CL_RESET
+	show_TITLE_DEBUG_WITH_COLOR    = CL_BLUE + show_TITLE_DEBUG_BASE + CL_RESET
+	show_TITLE_WARNNING_WITH_COLOR = CL_YELLOW + show_TITLE_WARNNING_BASE + CL_RESET
+	show_TITLE_ERROR_WITH_COLOR    = CL_RED + show_TITLE_ERROR_BASE + CL_RESET
 
 	EMPTY_TIME = -1
 )
@@ -116,7 +122,23 @@ var (
 	showFlag_debug          = true
 	showFlag_warnning       = true
 	showFlag_error          = true
+
+	show_TITLE_INFO     = show_TITLE_INFO_WITH_COLOR
+	show_TITLE_DEBUG    = show_TITLE_DEBUG_WITH_COLOR
+	show_TITLE_WARNNING = show_TITLE_WARNNING_WITH_COLOR
+	show_TITLE_ERROR    = show_TITLE_ERROR_WITH_COLOR
 )
+
+// 设置是否在showMsg中使用颜色
+// useColor:  true 表示使用颜色， 否色不使用
+func SetShowMsgColorFlag(useColor bool) {
+	if !useColor {
+		show_TITLE_INFO = show_TITLE_INFO_BASE
+		show_TITLE_DEBUG = show_TITLE_DEBUG_BASE
+		show_TITLE_WARNNING = show_TITLE_WARNNING_BASE
+		show_TITLE_ERROR = show_TITLE_ERROR_BASE
+	}
+}
 
 func SetShowFlag(flags int64) {
 	showFlags = flags
@@ -172,46 +194,46 @@ func TimeDigitValue(sec int64, timeFmt string) int64 {
 
 func ShowInfo(a ...interface{}) {
 	if showFlag_info {
-		fmt.Println(SHOW_TITLE_INFO, TimeString(EMPTY_TIME), a)
+		fmt.Println(show_TITLE_INFO, TimeString(EMPTY_TIME), a)
 	}
 }
 func ShowInfoF(fmtStr string, a ...interface{}) {
 	if showFlag_info {
-		fmt.Println(SHOW_TITLE_INFO, TimeString(EMPTY_TIME), fmt.Sprintf(fmtStr, a))
+		fmt.Println(show_TITLE_INFO, TimeString(EMPTY_TIME), fmt.Sprintf(fmtStr, a))
 	}
 }
 func ShowDebug(a ...interface{}) {
 	if showFlag_debug {
-		fmt.Println(SHOW_TITLE_DEBUG, TimeString(EMPTY_TIME), a)
+		fmt.Println(show_TITLE_DEBUG, TimeString(EMPTY_TIME), a)
 	}
 }
 
 func ShowDebugF(fmtStr string, a ...interface{}) {
 	if showFlag_debug {
-		fmt.Println(SHOW_TITLE_DEBUG, TimeString(EMPTY_TIME), fmt.Sprintf(fmtStr, a))
+		fmt.Println(show_TITLE_DEBUG, TimeString(EMPTY_TIME), fmt.Sprintf(fmtStr, a))
 	}
 }
 
 func ShowWarnning(a ...interface{}) {
 	if showFlag_warnning {
-		fmt.Println(SHOW_TITLE_WARNNING, TimeString(EMPTY_TIME), a)
+		fmt.Println(show_TITLE_WARNNING, TimeString(EMPTY_TIME), a)
 	}
 }
 func ShowWarnningF(fmtStr string, a ...interface{}) {
 	if showFlag_warnning {
-		fmt.Println(SHOW_TITLE_WARNNING, TimeString(EMPTY_TIME), fmt.Sprintf(fmtStr, a))
+		fmt.Println(show_TITLE_WARNNING, TimeString(EMPTY_TIME), fmt.Sprintf(fmtStr, a))
 	}
 }
 
 func ShowError(a ...interface{}) {
 	if showFlag_error {
-		fmt.Println(SHOW_TITLE_ERROR, TimeString(EMPTY_TIME), a)
+		fmt.Println(show_TITLE_ERROR, TimeString(EMPTY_TIME), a)
 	}
 }
 
 func ShowErrorF(fmtStr string, a ...interface{}) {
 	if showFlag_error {
-		fmt.Println(SHOW_TITLE_ERROR, TimeString(EMPTY_TIME), fmt.Sprintf(fmtStr, a))
+		fmt.Println(show_TITLE_ERROR, TimeString(EMPTY_TIME), fmt.Sprintf(fmtStr, a))
 	}
 }
 
