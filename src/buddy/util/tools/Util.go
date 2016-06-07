@@ -110,3 +110,15 @@ func (this MapString) EnsureInt64(key string, defaultValue int64) int64 {
 	}
 	return r
 }
+
+func SliptStr(str string, sep string) []string {
+	strs := strings.Split(str, sep)
+	if strs == nil {
+		return nil
+	}
+
+	for i, s := range strs {
+		strs[i] = strings.TrimSpace(s)
+	}
+	return strs
+}
