@@ -28,7 +28,7 @@ func CsvLoad(filename string, comma rune) [][]string {
 			break
 		} else if err != nil {
 			ShowError(err)
-			return nil
+			// return nil
 		}
 		list = append(list, record)
 	}

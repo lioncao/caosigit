@@ -86,6 +86,15 @@ const (
 // e.g:
 //		Color(CL_YELLOW , "WARNNING")
 func Color(colorStr string, srcStr string) string {
+	if showUseColor {
+		return colorStr + srcStr + CL_RESET
+	} else {
+		return srcStr
+	}
+}
+
+// 不受开关控制的颜色工具函数
+func ColorForce(colorStr string, srcStr string) string {
 	return colorStr + srcStr + CL_RESET
 }
 
@@ -127,17 +136,28 @@ var (
 	show_TITLE_DEBUG    = show_TITLE_DEBUG_WITH_COLOR
 	show_TITLE_WARNNING = show_TITLE_WARNNING_WITH_COLOR
 	show_TITLE_ERROR    = show_TITLE_ERROR_WITH_COLOR
+
+	showUseColor = true // 是否使用颜色打印
 )
 
 // 设置是否在showMsg中使用颜色
 // useColor:  true 表示使用颜色， 否色不使用
 func SetShowMsgColorFlag(useColor bool) {
+	showUseColor = useColor
 	if !useColor {
 		show_TITLE_INFO = show_TITLE_INFO_BASE
 		show_TITLE_DEBUG = show_TITLE_DEBUG_BASE
 		show_TITLE_WARNNING = show_TITLE_WARNNING_BASE
 		show_TITLE_ERROR = show_TITLE_ERROR_BASE
+	} else {
+		show_TITLE_INFO = show_TITLE_INFO_WITH_COLOR
+		show_TITLE_DEBUG = show_TITLE_DEBUG_WITH_COLOR
+		show_TITLE_WARNNING = show_TITLE_WARNNING_WITH_COLOR
+		show_TITLE_ERROR = show_TITLE_ERROR_WITH_COLOR
 	}
+}
+func GetShowMsgColorFlag() bool {
+	return showUseColor
 }
 
 func SetShowFlag(flags int64) {
@@ -239,6 +259,6 @@ func ShowErrorF(fmtStr string, a ...interface{}) {
 
 func CaoSiShowDebug(a ...interface{}) {
 	if showFlag_debug {
-		fmt.Println(CL_CYAN+"[CAOSI_DEBUG]"+CL_RESET, TimeString(EMPTY_TIME), a)
+		fmt.Println(Color(CL_CYAN, "[CAOSI_DEBUG]"), TimeString(EMPTY_TIME), a)
 	}
 }
