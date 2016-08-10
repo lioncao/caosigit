@@ -219,7 +219,7 @@ func ShowInfo(a ...interface{}) {
 }
 func ShowInfoF(fmtStr string, a ...interface{}) {
 	if showFlag_info {
-		fmt.Println(show_TITLE_INFO, TimeString(EMPTY_TIME), fmt.Sprintf(fmtStr, a))
+		fmt.Println(show_TITLE_INFO, TimeString(EMPTY_TIME), fmt.Sprintf(fmtStr, a...))
 	}
 }
 func ShowDebug(a ...interface{}) {
@@ -230,7 +230,7 @@ func ShowDebug(a ...interface{}) {
 
 func ShowDebugF(fmtStr string, a ...interface{}) {
 	if showFlag_debug {
-		fmt.Println(show_TITLE_DEBUG, TimeString(EMPTY_TIME), fmt.Sprintf(fmtStr, a))
+		fmt.Println(show_TITLE_DEBUG, TimeString(EMPTY_TIME), fmt.Sprintf(fmtStr, a...))
 	}
 }
 
@@ -241,7 +241,7 @@ func ShowWarnning(a ...interface{}) {
 }
 func ShowWarnningF(fmtStr string, a ...interface{}) {
 	if showFlag_warnning {
-		fmt.Println(show_TITLE_WARNNING, TimeString(EMPTY_TIME), fmt.Sprintf(fmtStr, a))
+		fmt.Println(show_TITLE_WARNNING, TimeString(EMPTY_TIME), fmt.Sprintf(fmtStr, a...))
 	}
 }
 
@@ -253,7 +253,7 @@ func ShowError(a ...interface{}) {
 
 func ShowErrorF(fmtStr string, a ...interface{}) {
 	if showFlag_error {
-		fmt.Println(show_TITLE_ERROR, TimeString(EMPTY_TIME), fmt.Sprintf(fmtStr, a))
+		fmt.Println(show_TITLE_ERROR, TimeString(EMPTY_TIME), fmt.Sprintf(fmtStr, a...))
 	}
 }
 
