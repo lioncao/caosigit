@@ -63,9 +63,19 @@ list="$list gopkg.in/mgo.v2/bson"
 # list="$list gopkg.in/mgo.v2/testdb"
 list="$list gopkg.in/mgo.v2/txn"
 
+echo "=========================================="
+echo "=========================================="
+echo "GOROOT=$GOROOT"
+echo "GOPATH=$GOPATH"
+echo "=========================================="
+echo "=========================================="
+
+
+
+
 for name in $list; do
 	go install $name
-	if [[ $? -ne 0 ]]; then
+	if [ $? -ne 0 ]; then
 		echo "=========================================="
 		echo "install failed $name"
 		echo "=========================================="
