@@ -1,8 +1,8 @@
 package network
 
 import (
-	"buddy/util/tools"
 	"fmt"
+	"lioncao/util/tools"
 )
 
 type Netmgr struct {

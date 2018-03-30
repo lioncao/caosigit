@@ -1,7 +1,7 @@
 package mongodb
 
 import (
-	//"buddy/util/tools"
+	//"lioncao/util/tools"
 	"fmt"
 	"gopkg.in/mgo.v2"
 	//"gopkg.in/mgo.v2/bson"

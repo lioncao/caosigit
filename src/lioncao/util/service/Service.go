@@ -1,10 +1,10 @@
 package service
 
 import (
-	bdsocket "buddy/net/socket"
-	"buddy/util/cmd"
-	"buddy/util/tools"
 	"fmt"
+	bdsocket "lioncao/net/socket"
+	"lioncao/util/cmd"
+	"lioncao/util/tools"
 	"net"
 	"os"
 	"time"

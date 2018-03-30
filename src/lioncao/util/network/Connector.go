@@ -1,7 +1,7 @@
 package network
 
 import (
-	"buddy/util/tools"
+	"lioncao/util/tools"
 	//"code.google.com/p/goprotobuf/proto"
 	//"common/msg"
 	"fmt"
