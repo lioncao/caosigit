@@ -2,11 +2,12 @@ package service
 
 import (
 	"fmt"
-	bdsocket "lioncao/net/socket"
+	lsocket "lioncao/net/socket"
 	"lioncao/util/cmd"
 	"lioncao/util/tools"
 	"net"
 	"os"
+	"sync"
 	"time"
 )
 
@@ -30,7 +31,7 @@ type TcpCallbacks struct {
 	Session interface{}
 }
 
-// tcp连接 MessageHandler的三个回调, 也就是bdsocket.TcpCallbacks interface{}的实现
+// tcp连接 MessageHandler的三个回调, 也就是lsocket.TcpCallbacks interface{}的实现
 func (this *TcpCallbacks) SetSessionData(data interface{}) {
 	this.Session = data
 }
@@ -38,15 +39,15 @@ func (this *TcpCallbacks) GetSessionData() interface{} {
 	return this.Session
 }
 
-func (this *TcpCallbacks) TcpOnReceiveCallback(handler *bdsocket.MessageHandler, buf []byte, bufSize int) error {
+func (this *TcpCallbacks) TcpOnReceiveCallback(handler *lsocket.MessageHandler, buf []byte, bufSize int) error {
 	tools.CaoSiShowDebug("service tcp call backs TcpOnReceiveCallback")
 	return nil
 }
-func (this *TcpCallbacks) TcpDoMessageCallback(handler *bdsocket.MessageHandler) error {
+func (this *TcpCallbacks) TcpDoMessageCallback(handler *lsocket.MessageHandler) error {
 	tools.CaoSiShowDebug("service tcp call backs TcpDoMessageCallback")
 	return nil
 }
-func (this *TcpCallbacks) TcpOnWriteCallback(handler *bdsocket.MessageHandler) error {
+func (this *TcpCallbacks) TcpOnWriteCallback(handler *lsocket.MessageHandler) error {
 	tools.CaoSiShowDebug("service tcp call backs TcpOnWriteCallback")
 	return nil
 }
@@ -75,7 +76,7 @@ type ServiceSuper struct {
 	ServerKey    string // 服务器key __Q:可能不需要这个东西
 	Language     string // 语言代码
 
-	TcpCB bdsocket.TcpCallbacks
+	TcpCB lsocket.TcpCallbacks
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -143,13 +144,13 @@ func (this *ServiceSuper) GetRuntimeState() int {
 // ServiceSuper 基本功能实现 start
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-func (this *ServiceSuper) SetTcpCB(tcpCB bdsocket.TcpCallbacks) {
+func (this *ServiceSuper) SetTcpCB(tcpCB lsocket.TcpCallbacks) {
 	this.TcpCB = tcpCB
 }
 
 // 启动socket监听服务
 func (this *ServiceSuper) StartSocketService(ip, port string) error {
-	go bdsocket.StartTcp(ip, port, this.DoTcp)
+	go lsocket.StartTcp(ip, port, this.DoTcp)
 	return nil
 }
 
@@ -158,10 +159,10 @@ func (this *ServiceSuper) DoTcp(conn net.Conn) error {
 
 	var err error
 	//var length int
-	var handler *bdsocket.MessageHandler
+	var handler *lsocket.MessageHandler
 
 	// 创建消息处理句柄并设置参数
-	handler, err = bdsocket.CreateMessageHandler(conn)
+	handler, err = lsocket.CreateMessageHandler(conn)
 	if err != nil {
 		tools.ShowError("CreateMessageHandler err,", conn, err)
 		return nil
@@ -198,7 +199,7 @@ type ServiceManager struct {
 	cmdMachine *cmd.CmdMachine
 }
 
-func (this *ServiceManager) Init(factoryFunc ServiceCreateFunc) error {
+func (this *ServiceManager) Init(factoryFunc ServiceCreateFunc, cfgMgr *tools.ConfigMgr, wg *sync.WaitGroup) error {
 	if factoryFunc == nil {
 		return tools.Error("factoryFunc is nil,init ServiceManager faild")
 	}
@@ -206,6 +207,11 @@ func (this *ServiceManager) Init(factoryFunc ServiceCreateFunc) error {
 	this.sMap = make(map[string]*Service)
 	this.Conf = new(ServerConfig)
 	this.Factory = factoryFunc
+
+	err := this.initConfig(cfgMgr)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -216,7 +222,7 @@ func (this *ServiceManager) Init(factoryFunc ServiceCreateFunc) error {
 // }
 
 // 从通用配置数据中初始化配置信息
-func (this *ServiceManager) InitConfig(cfgMgr *tools.ConfigMgr) error {
+func (this *ServiceManager) initConfig(cfgMgr *tools.ConfigMgr) error {
 	var (
 		info *ServiceInfo
 	)
@@ -318,7 +324,7 @@ func (this *ServiceManager) Set(key string, s *Service) (*Service, error) {
 func (this *ServiceManager) StartCmd(ip, port, password, title string) error {
 	cm := cmd.NewCmdMachine(password, title, this.DoCmd)
 	this.cmdMachine = cm
-	go bdsocket.StartTcp(ip, port, cm.DoTcp)
+	go lsocket.StartTcp(ip, port, cm.DoTcp)
 	return nil
 }
 

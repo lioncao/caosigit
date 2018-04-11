@@ -115,11 +115,13 @@ const (
 	show_TITLE_DEBUG_BASE    = "[DBUG]"
 	show_TITLE_WARNNING_BASE = "[WARN]"
 	show_TITLE_ERROR_BASE    = "[ERRO]"
+	show_TITLE_TODO_BASE     = "[TODO]"
 
 	show_TITLE_INFO_WITH_COLOR     = CL_GREEN + show_TITLE_INFO_BASE + CL_RESET
 	show_TITLE_DEBUG_WITH_COLOR    = CL_BLUE + show_TITLE_DEBUG_BASE + CL_RESET
 	show_TITLE_WARNNING_WITH_COLOR = CL_YELLOW + show_TITLE_WARNNING_BASE + CL_RESET
 	show_TITLE_ERROR_WITH_COLOR    = CL_RED + show_TITLE_ERROR_BASE + CL_RESET
+	show_TITLE_TODO_WITH_COLOR     = CL_YELLOW + show_TITLE_TODO_BASE + CL_RESET
 
 	EMPTY_TIME = -1
 )
@@ -136,6 +138,7 @@ var (
 	show_TITLE_DEBUG    = show_TITLE_DEBUG_WITH_COLOR
 	show_TITLE_WARNNING = show_TITLE_WARNNING_WITH_COLOR
 	show_TITLE_ERROR    = show_TITLE_ERROR_WITH_COLOR
+	show_TITLE_TODO     = show_TITLE_TODO_WITH_COLOR
 
 	showUseColor = true // 是否使用颜色打印
 )
@@ -149,11 +152,14 @@ func SetShowMsgColorFlag(useColor bool) {
 		show_TITLE_DEBUG = show_TITLE_DEBUG_BASE
 		show_TITLE_WARNNING = show_TITLE_WARNNING_BASE
 		show_TITLE_ERROR = show_TITLE_ERROR_BASE
+		show_TITLE_TODO = show_TITLE_TODO_BASE
+
 	} else {
 		show_TITLE_INFO = show_TITLE_INFO_WITH_COLOR
 		show_TITLE_DEBUG = show_TITLE_DEBUG_WITH_COLOR
 		show_TITLE_WARNNING = show_TITLE_WARNNING_WITH_COLOR
 		show_TITLE_ERROR = show_TITLE_ERROR_WITH_COLOR
+		show_TITLE_TODO = show_TITLE_TODO_WITH_COLOR
 	}
 }
 func GetShowMsgColorFlag() bool {
@@ -255,6 +261,10 @@ func ShowErrorF(fmtStr string, a ...interface{}) {
 	if showFlag_error {
 		fmt.Println(show_TITLE_ERROR, TimeString(EMPTY_TIME), fmt.Sprintf(fmtStr, a...))
 	}
+}
+
+func TODO(a ...interface{}) {
+	fmt.Println(show_TITLE_TODO, TimeString(EMPTY_TIME), a)
 }
 
 func CaoSiShowDebug(a ...interface{}) {
