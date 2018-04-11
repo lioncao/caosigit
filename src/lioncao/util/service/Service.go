@@ -108,14 +108,14 @@ func (this *ServiceSuper) GetInfo() *ServiceInfo {
 
 // 设置线程信号量
 func (this *ServiceSuper) SetWaitGroup(wg *sync.WaitGroup) {
-
+	this.Wg = wg
+	if this.Wg != nil {
+		this.Wg.Add(1)
+	}
 }
 
 // 启动
 func (this *ServiceSuper) Run() error {
-	if this.Wg != nil {
-		this.Wg.Add(1)
-	}
 	/////////////////////////////////////////
 	// BULABULABULA
 	return nil
@@ -231,6 +231,7 @@ func (this *ServiceManager) Init(factoryFunc ServiceCreateFunc, cfgMgr *tools.Co
 	this.sMap = make(map[string]*Service)
 	this.Conf = new(ServerConfig)
 	this.Factory = factoryFunc
+	this.wg = wg
 
 	err := this.initConfig(cfgMgr)
 	if err != nil {
