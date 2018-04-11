@@ -8,6 +8,7 @@ import (
 	"net"
 	"os"
 	"sync"
+	"syscall"
 	"time"
 )
 
@@ -56,6 +57,7 @@ func (this *TcpCallbacks) TcpOnWriteCallback(handler *lsocket.MessageHandler) er
 type Service interface {
 	SetInfo(cf ServiceInfo) error                              // 设置信息
 	GetInfo() *ServiceInfo                                     // 获取信息
+	SetWaitGroup(wg *sync.WaitGroup)                           // 设置线程信号量
 	Run() error                                                // 启动
 	Stop() error                                               // 结束
 	Reset() error                                              // 复位(停止服务,并回复到初始状态)
@@ -71,12 +73,12 @@ type ServiceSuper struct {
 	TitleOnShow  string
 	RuntimeState int
 	HeartBeat    time.Duration
-	DebugMod     bool   // 调试开关
-	ServerId     int64  // 服务器唯一id
-	ServerKey    string // 服务器key __Q:可能不需要这个东西
-	Language     string // 语言代码
-
-	TcpCB lsocket.TcpCallbacks
+	DebugMod     bool            // 调试开关
+	ServerId     int64           // 服务器唯一id
+	ServerKey    string          // 服务器key __Q:可能不需要这个东西
+	Language     string          // 语言代码
+	Wg           *sync.WaitGroup // 线程信号量
+	TcpCB        lsocket.TcpCallbacks
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -104,14 +106,27 @@ func (this *ServiceSuper) GetInfo() *ServiceInfo {
 	return &this.ServiceInfo
 }
 
+// 设置线程信号量
+func (this *ServiceSuper) SetWaitGroup(wg *sync.WaitGroup) {
+
+}
+
 // 启动
 func (this *ServiceSuper) Run() error {
-
+	if this.Wg != nil {
+		this.Wg.Add(1)
+	}
+	/////////////////////////////////////////
+	// BULABULABULA
 	return nil
 }
 
 // 结束
 func (this *ServiceSuper) Stop() error {
+
+	if this.Wg != nil {
+		this.Wg.Done()
+	}
 	return nil
 }
 
@@ -182,7 +197,15 @@ func (this *ServiceSuper) DoTcp(conn net.Conn) error {
 
 func (this *ServiceSuper) OnSig(sig os.Signal) {
 	info := this.GetInfo()
-	tools.ShowInfo("ServiceSuper: service", info.Name, "OnSig", sig)
+	tools.ShowInfo("OnSig:", "service ["+info.Name+"]", tools.Color(tools.CL_YELLOW, sig.String()))
+	switch sig {
+	case syscall.SIGTERM: //kill -15
+		fallthrough
+	case syscall.SIGINT:
+		this.Stop()
+		return
+	default:
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -196,7 +219,8 @@ type ServiceManager struct {
 	Conf       *ServerConfig       // 全服的当前配置信息
 	Factory    ServiceCreateFunc   // Service的工厂方法
 	sMap       map[string]*Service // 实际service列表
-	cmdMachine *cmd.CmdMachine
+	wg         *sync.WaitGroup     // 线程信号量对象
+	cmdMachine *cmd.CmdMachine     // 命令行处理工具
 }
 
 func (this *ServiceManager) Init(factoryFunc ServiceCreateFunc, cfgMgr *tools.ConfigMgr, wg *sync.WaitGroup) error {
@@ -287,8 +311,11 @@ func (this *ServiceManager) StartServices(factoryFunc ServiceCreateFunc) error {
 		if s != nil && sInfo.Status == OPEN {
 			// 启动有效Service 的goroutin
 			(*s).SetInfo(*sInfo)
+			(*s).SetWaitGroup(this.wg)
+
 			this.Set(k, s)
 			tools.ShowInfo(fmt.Sprintf("service run type=%s , name = %s", sInfo.Type, sInfo.Name))
+			tools.TODO("此处如何保证wg能正常处理?")
 			go (*s).Run()
 		}
 	}
