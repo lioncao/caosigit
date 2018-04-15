@@ -126,6 +126,7 @@ func (this *ServiceSuper) Stop() error {
 
 	if this.Wg != nil {
 		this.Wg.Done()
+		this.Wg = nil
 	}
 	return nil
 }
@@ -197,7 +198,7 @@ func (this *ServiceSuper) DoTcp(conn net.Conn) error {
 
 func (this *ServiceSuper) OnSig(sig os.Signal) {
 	info := this.GetInfo()
-	tools.ShowInfo("OnSig:", "service ["+info.Name+"]", tools.Color(tools.CL_YELLOW, sig.String()))
+	tools.ShowInfo("ServiceSuper.OnSig:", "service ["+info.Name+"]", tools.Color(tools.CL_YELLOW, sig.String()))
 	switch sig {
 	case syscall.SIGTERM: //kill -15
 		fallthrough

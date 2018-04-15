@@ -5,6 +5,7 @@ import (
 	"net"
 )
 
+// 用于tcp监听的对象
 type Listener struct {
 	id            int32
 	l             *net.TCPListener

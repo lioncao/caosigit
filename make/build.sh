@@ -62,6 +62,8 @@ list="$list gopkg.in/mgo.v2/bson"
 # list="$list gopkg.in/mgo.v2/sasl"
 # list="$list gopkg.in/mgo.v2/testdb"
 list="$list gopkg.in/mgo.v2/txn"
+list="$list golang.org/x/net/websocket"
+
 
 echo "=========================================="
 echo "=========================================="
