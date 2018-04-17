@@ -14,7 +14,7 @@ const (
 
 )
 
-var BinOrder = binary.LittleEndian
+var BinOrder = binary.BigEndian
 
 // 用于socket连接的iobuffer
 type IOBuffer struct {
@@ -66,11 +66,14 @@ func (this *IOBuffer) PushInputData(data []byte) error {
 	var n int
 	//var inputBufBytes []byte
 
+	// fmt.Println("inputBufferDataLen", inputBufferDataLen)
 	curInputMsgLen = this.curInputMsgLen     // 不含包头的消息长度
 	for inputBufferDataLen >= MSG_HEAD_LEN { // 只要buffer中的剩余数据长度达到一个包头的长度就需要继续解析下去
 		if curInputMsgLen <= 0 { // 当前没有消息在等待数据
 			// 解出包头(也就是消息长度)
 			err = binary.Read(inputBuffer, BinOrder, &curInputMsgLen)
+			// fmt.Println("curInputMsgLen", curInputMsgLen)
+
 			//inputBufBytes = inputBuffer.Bytes()
 			//curInputMsgLen = BinOrder.Uint32(inputBufBytes[:MSG_HEAD_LEN])
 			// TODO: 非法消息长度的细致化处理, 如何通知外部?
@@ -152,6 +155,7 @@ func (this *IOBuffer) PushOutputData(data []byte) error {
 
 // 弹出输出数据
 func (this *IOBuffer) PopOutputData() ([]byte, error) {
+	// fmt.Println("this.outputBuffer", this.outputBuffer.Len())
 	if this.outputBuffer.Len() > 0 {
 		ret := this.outputBuffer.Bytes()
 		this.outputBuffer.Reset()
