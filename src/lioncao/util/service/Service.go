@@ -23,9 +23,10 @@ const (
 
 // 服务器的运行状态
 const (
-	RUNTIME_STATE_DEFAULT = iota // 默认状态(尚未初始化完毕)
-	RUNTIME_STATE_RUNNING        // 运行中
-	RUNTIME_STATE_DESTROY        // 已经关闭
+	RUNTIME_STATE_DEFAULT  = iota // 默认状态(尚未初始化完毕)
+	RUNTIME_STATE_RUNNING         // 运行中
+	RUNTIME_STATE_STOPPING        // 关闭中
+	RUNTIME_STATE_STOPPED         // 已经关闭
 )
 
 type TcpCallbacks struct {
