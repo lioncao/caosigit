@@ -199,7 +199,7 @@ func (this *configMgr) Print() {
 	for gname, gdata := range this.MainData {
 		fmt.Println(Color(CL_YELLOW, gname))
 		for key, value := range gdata {
-			fmt.Println("    ", Color(CL_GREEN, key), value)
+			fmt.Println(fmt.Sprintf("%30s  %v", Color(CL_GREEN, key), value))
 		}
 		fmt.Println("")
 	}
@@ -211,7 +211,8 @@ func (this *configMgr) Print() {
 			str := fmt.Sprintf(Color(CL_YELLOW, "%s %d"), _CONFIG_SECTION_SERVICE, i)
 			fmt.Println(str)
 			for key, value := range gdata {
-				fmt.Println("    ", Color(CL_GREEN, key), value)
+				// fmt.Println("    ", Color(CL_GREEN, key), value)
+				fmt.Println(fmt.Sprintf("%30s  %v", Color(CL_GREEN, key), value))
 			}
 			fmt.Println("")
 		}
