@@ -11,9 +11,10 @@ func NewConstMapping() *ConstMapping {
 	return this
 }
 
+// 单组常数
 type ConstList struct {
-	Name   string
-	Values []*ConstInfo
+	Name   string       // 本组的名称
+	Values []*ConstInfo // 组中的常数
 }
 
 func NewConstList() *ConstList {
@@ -21,12 +22,13 @@ func NewConstList() *ConstList {
 	return this
 }
 
+// 组中的单个常数
 type ConstInfo struct {
-	Name       string
-	KeyType    string
-	KeyValue   string
-	ValueType  string
-	ValueValue string
+	Name       string `json:"name"`        // 组名
+	KeyType    string `json:"key_type"`    // key类型
+	KeyValue   string `json:"key_value"`   // key值的字符串形式
+	ValueType  string `json:"value_type"`  // value类型
+	ValueValue string `json:"value_value"` // value对应的字符串形式
 }
 
 func NewConstInfo() *ConstInfo {
@@ -50,7 +52,35 @@ func NewConstInfoFromCommonData(cd *CommonData) *ConstInfo {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 // 从ConstMapping配置文件中构建一个ConstMapping对象
-func NewConstMappingFromFile(filename string) *ConstMapping {
+func NewConstMappingFromJsonObjFile(filename string) *ConstMapping {
+	this := NewConstMapping()
+
+	// 从 json_obj文件中读出数据
+	datas := make([]*ConstInfo, 0)
+	LoadJsonFile(filename, datas)
+	cnt := len(datas)
+
+	// 数据入表
+	var (
+		info *ConstInfo
+		list *ConstList
+	)
+
+	for i := 0; i < cnt; i++ {
+		info = datas[i]
+		list = this.allConstList[info.Name]
+		if list == nil {
+			list = NewConstList()
+			this.allConstList[info.Name] = list
+		}
+		list.Values = append(list.Values, info)
+	}
+
+	return this
+}
+
+// 从ConstMapping配置文件中构建一个ConstMapping对象
+func NewConstMappingFromCommonJsonFile(filename string) *ConstMapping {
 
 	cdList := NewCommonJsonDataFromFile(filename).ToCommDataList()
 	if cdList == nil {
