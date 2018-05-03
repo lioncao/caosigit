@@ -7,13 +7,25 @@ import (
 	//"gopkg.in/mgo.v2/bson"
 )
 
+const (
+	RESULT_NOT_FOUND = "not found" // mongodb中未查取到的结果
+)
+
 type MgoCon struct {
-	ip      string
-	port    string
-	session *mgo.Session
+	ip       string
+	port     string
+	username string
+	password string
+	session  *mgo.Session
+	ok       bool // 是否可以进行数据操作了
 }
 
-func (this *MgoCon) Init(ip, port string) error {
+func (this *MgoCon) Init(ip, port, username, password string) error {
+	this.ip = ip
+	this.port = port
+	this.username = username
+	this.password = password
+
 	address := fmt.Sprintf("%s:%s", ip, port)
 	var err error
 	this.session, err = mgo.Dial(address)
@@ -22,6 +34,14 @@ func (this *MgoCon) Init(ip, port string) error {
 	} else {
 		this.session.SetMode(mgo.Monotonic, true)
 	}
+
+	if username != "" {
+		err = this.Login(username, password)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -87,6 +107,20 @@ func (this *MgoCon) FindOne(DB, collect string, selector interface{}, result int
 func (this *MgoCon) Remove(DB, collect string, selector interface{}) error {
 	c := this.session.DB(DB).C(collect)
 	err := c.Remove(selector)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (this *MgoCon) Login(user, pass string) error {
+
+	cred := &mgo.Credential{
+		Username: user,
+		Password: pass,
+	}
+
+	err := this.session.Login(cred)
 	if err != nil {
 		return err
 	}
