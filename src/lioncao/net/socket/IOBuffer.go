@@ -14,8 +14,6 @@ const (
 
 )
 
-var BinOrder = binary.LittleEndian
-
 // 用于socket连接的iobuffer
 type IOBuffer struct {
 	// 限制参数
@@ -29,6 +27,7 @@ type IOBuffer struct {
 	// 输出相关
 	outputBuffer *bytes.Buffer // 输出数据
 
+	binOrder binary.ByteOrder
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -45,7 +44,14 @@ func (this *IOBuffer) Init(inputMsgLenLimit, outputMsgLenLimit uint32) error {
 
 	// 输出缓存数据初始化
 	this.outputBuffer = bytes.NewBuffer([]byte{})
+
+	// 大小头
+	this.binOrder = binary.LittleEndian
 	return nil
+}
+
+func (this *IOBuffer) setByteOrder(od binary.ByteOrder) {
+	this.binOrder = od
 }
 
 // 压入输入数据
@@ -70,7 +76,7 @@ func (this *IOBuffer) PushInputData(data []byte) error {
 	for inputBufferDataLen >= MSG_HEAD_LEN { // 只要buffer中的剩余数据长度达到一个包头的长度就需要继续解析下去
 		if curInputMsgLen <= 0 { // 当前没有消息在等待数据
 			// 解出包头(也就是消息长度)
-			err = binary.Read(inputBuffer, BinOrder, &curInputMsgLen)
+			err = binary.Read(inputBuffer, this.binOrder, &curInputMsgLen)
 			//inputBufBytes = inputBuffer.Bytes()
 			//curInputMsgLen = BinOrder.Uint32(inputBufBytes[:MSG_HEAD_LEN])
 			// TODO: 非法消息长度的细致化处理, 如何通知外部?
@@ -139,7 +145,7 @@ func (this *IOBuffer) PushOutputData(data []byte) error {
 	var buf [8]byte
 
 	length = uint32(len(data))
-	BinOrder.PutUint32(buf[:], length)
+	this.binOrder.PutUint32(buf[:], length)
 
 	_, err = this.outputBuffer.Write(buf[0:4])
 	if err != nil {
@@ -161,5 +167,57 @@ func (this *IOBuffer) PopOutputData() ([]byte, error) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 其它代码
+// 带锁的ioBuffer
 ////////////////////////////////////////////////////////////////////////////////
+
+// 用于socket连接的iobuffer
+type IOBufferWithLock struct {
+	IOBuffer
+	inputLock tools.FastLock
+	outLock   tools.FastLock
+}
+
+// 压入输入数据
+// __TODO:此函数算法有待优化
+func (this *IOBufferWithLock) PushInputDataLock(data []byte) error {
+	for {
+		if this.inputLock.Lock() {
+			defer this.inputLock.Unlock()
+			return this.PushInputData(data)
+		}
+	}
+	return nil
+}
+
+// 弹出输入数据
+func (this *IOBufferWithLock) PopInputDataLock() ([]byte, error) {
+	for {
+		if this.inputLock.Lock() {
+			defer this.inputLock.Unlock()
+			return this.PopInputData()
+		}
+	}
+	return nil, nil
+}
+
+// 压入输出数据
+func (this *IOBufferWithLock) PushOutputDataLock(data []byte) error {
+	for {
+		if this.outLock.Lock() {
+			defer this.outLock.Unlock()
+			return this.PushOutputData(data)
+		}
+	}
+	return nil
+}
+
+// 弹出输出数据
+func (this *IOBufferWithLock) PopOutputDataLock() ([]byte, error) {
+	for {
+		if this.outLock.Lock() {
+			defer this.outLock.Unlock()
+			return this.PopOutputData()
+		}
+	}
+	return nil, nil
+}

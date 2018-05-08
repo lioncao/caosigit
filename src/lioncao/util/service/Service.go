@@ -29,28 +29,34 @@ const (
 	RUNTIME_STATE_STOPPED         // 已经关闭
 )
 
+// lsocket.TcpCallbacks interface{}
 type TcpCallbacks struct {
-	Session interface{}
 }
 
-// tcp连接 MessageHandler的三个回调, 也就是lsocket.TcpCallbacks interface{}的实现
-func (this *TcpCallbacks) SetSessionData(data interface{}) {
-	this.Session = data
-}
-func (this *TcpCallbacks) GetSessionData() interface{} {
-	return this.Session
-}
-
-func (this *TcpCallbacks) TcpOnReceiveCallback(handler *lsocket.MessageHandler, buf []byte, bufSize int) error {
-	tools.CaoSiShowDebug("service tcp call backs TcpOnReceiveCallback")
+// 客户端连接到达时的处理
+func (this *TcpCallbacks) TcpOnConnectCallback(handler *lsocket.MessageHandler) error {
 	return nil
 }
+
+// 数据到达时的处理
+func (this *TcpCallbacks) TcpOnReceiveCallback(handler *lsocket.MessageHandler, buf []byte, bufSize int) error {
+	tools.CaoSiShowDebug("service tcp call backs TcpOnReceiveCallback", string(buf))
+	return nil
+}
+
+// 具体的消息处理逻辑,一般来说这个功能是由socket的使用者自行实现的,在这里处理有可能会导致线程问题
 func (this *TcpCallbacks) TcpDoMessageCallback(handler *lsocket.MessageHandler) error {
 	tools.CaoSiShowDebug("service tcp call backs TcpDoMessageCallback")
 	return nil
 }
 func (this *TcpCallbacks) TcpOnWriteCallback(handler *lsocket.MessageHandler) error {
 	tools.CaoSiShowDebug("service tcp call backs TcpOnWriteCallback")
+	return nil
+}
+
+// 网络连接被客户端断开了
+func (this *TcpCallbacks) TcpOnClientClosedCallback(handler *lsocket.MessageHandler) error {
+
 	return nil
 }
 
@@ -166,7 +172,10 @@ func (this *ServiceSuper) SetTcpCB(tcpCB lsocket.TcpCallbacks) {
 }
 
 // 启动socket监听服务
-func (this *ServiceSuper) StartSocketService(ip, port string) error {
+func (this *ServiceSuper) StartSocketService(ip, port string, tcpCB lsocket.TcpCallbacks) error {
+	if tcpCB != nil {
+		this.SetTcpCB(tcpCB)
+	}
 	go lsocket.StartTcp(ip, port, this.DoTcp)
 	return nil
 }

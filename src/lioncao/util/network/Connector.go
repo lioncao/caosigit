@@ -1,7 +1,9 @@
 package network
 
 import (
+	lsocket "lioncao/net/socket"
 	"lioncao/util/tools"
+
 	//"code.google.com/p/goprotobuf/proto"
 	//"common/msg"
 	"fmt"
@@ -12,7 +14,7 @@ import (
 type ConnectHandler interface {
 	Init()
 	OnClose(sid int32)
-	OnProcess(b LockBuffer) error
+	OnProcess(b lsocket.IOBufferWithLock) error
 	Ping()
 	//GetMessageHandler(cmd int32) (func(c *Connector, data *msg.S2S) error, bool)
 }
@@ -21,7 +23,7 @@ type Connector struct {
 	id            int32
 	sid           int32
 	conn          *net.TCPConn
-	buffer        LockBuffer
+	buffer        lsocket.IOBufferWithLock
 	owner         *Listener
 	mgr           *Netmgr
 	MsgHandlerMgr ConnectHandler

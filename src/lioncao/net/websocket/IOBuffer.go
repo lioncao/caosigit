@@ -1,11 +1,11 @@
-package network
+package websocket
 
 import (
 	"lioncao/util/tools"
 )
 
-// 用于socket连接的WebSocketBuffer
-type WebSocketBuffer struct {
+// 用于websocket连接的IOBuffer
+type IOBuffer struct {
 	lockInput  tools.FastLock
 	lockOutput tools.FastLock
 
@@ -18,17 +18,17 @@ type WebSocketBuffer struct {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// 对接口 ulio.WebSocketBuffer的实现
+// 对接口 ulio.IOBuffer的实现
 ////////////////////////////////////////////////////////////////////////////////
 // 初始化
-func (this *WebSocketBuffer) Init() error {
+func (this *IOBuffer) Init() error {
 	this.inputMsgs = make([]string, 0)
 	this.outputMsgs = make([]string, 0)
 	return nil
 }
 
 // 压入输入数据
-func (this *WebSocketBuffer) PushInputMsg(msg string) error {
+func (this *IOBuffer) PushInputMsg(msg string) error {
 	this.lockInput.Lock()
 	defer this.lockInput.Unlock()
 
@@ -40,7 +40,7 @@ func (this *WebSocketBuffer) PushInputMsg(msg string) error {
 }
 
 // 弹出输入数据
-func (this *WebSocketBuffer) PopInputMsgs() ([]string, error) {
+func (this *IOBuffer) PopInputMsgs() ([]string, error) {
 	this.lockInput.Lock()
 	defer this.lockInput.Unlock()
 
@@ -56,7 +56,7 @@ func (this *WebSocketBuffer) PopInputMsgs() ([]string, error) {
 }
 
 // 压入输出数据
-func (this *WebSocketBuffer) PushOutputMsg(msg string) error {
+func (this *IOBuffer) PushOutputMsg(msg string) error {
 	this.lockOutput.Lock()
 	defer this.lockOutput.Unlock()
 
@@ -68,7 +68,7 @@ func (this *WebSocketBuffer) PushOutputMsg(msg string) error {
 }
 
 // 弹出输出数据
-func (this *WebSocketBuffer) PopOutputMsg() ([]string, error) {
+func (this *IOBuffer) PopOutputMsg() ([]string, error) {
 	this.lockOutput.Lock()
 	defer this.lockOutput.Unlock()
 

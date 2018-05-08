@@ -31,11 +31,11 @@ type DoMessageFunc func(handler *MessageHandler) error
 type OnWriteFunc func(handler *MessageHandler) error
 
 type TcpCallbacks interface {
-	SetSessionData(data interface{})
-	GetSessionData() interface{}
+	TcpOnConnectCallback(handler *MessageHandler) error                          // 连接时的处理
 	TcpOnReceiveCallback(handler *MessageHandler, buf []byte, bufSize int) error // 网络数据到达后的回调
 	TcpDoMessageCallback(handler *MessageHandler) error                          // 处理函数
 	TcpOnWriteCallback(handler *MessageHandler) error                            // 数据写入回调
+	TcpOnClientClosedCallback(handler *MessageHandler) error
 }
 
 func CheckTimeout(err error) bool {
@@ -61,6 +61,8 @@ type MessageHandler struct {
 
 	// 缓存的数据句柄
 	SessionData interface{}
+
+	Debug bool
 }
 
 // 消息处理句柄初始化
@@ -117,21 +119,21 @@ func (this *MessageHandler) RunTcp(heartBeat time.Duration) error {
 	var err error
 	var length int
 
-	var OnReceive OnReceiveFunc
-	var DoMessage DoMessageFunc
-	var OnWrite OnWriteFunc
-
 	conn := this.Conn
 	defer conn.Close()
 
-	OnReceive = this.callbacks.TcpOnReceiveCallback
-	DoMessage = this.callbacks.TcpDoMessageCallback
-	OnWrite = this.callbacks.TcpOnWriteCallback
+	OnConnect := this.callbacks.TcpOnConnectCallback
+	OnReceive := this.callbacks.TcpOnReceiveCallback
+	DoMessage := this.callbacks.TcpDoMessageCallback
+	OnWrite := this.callbacks.TcpOnWriteCallback
+	OnClosed := this.callbacks.TcpOnClientClosedCallback
 
 	// 网络读取缓冲创建
 	buffSize := 16 * 1024
 	buffRead := make([]byte, buffSize, buffSize)
 	forceTimeOut := time.Second * 10
+
+	OnConnect(this)
 
 	now = time.Now()
 	lastVisit = now
@@ -141,7 +143,9 @@ func (this *MessageHandler) RunTcp(heartBeat time.Duration) error {
 		now = time.Now()
 		deltaTime = time.Since(lastVisit)
 		if deltaTime >= forceTimeOut {
-			tools.ShowDebug("connection was closed by force timeout", conn.RemoteAddr())
+			if this.Debug {
+				tools.ShowDebug("connection was closed by force timeout", conn.RemoteAddr())
+			}
 			conn.Close()
 			break
 		}
@@ -160,11 +164,15 @@ func (this *MessageHandler) RunTcp(heartBeat time.Duration) error {
 			if CheckTimeout(err) {
 				length = 0
 			} else {
+				OnClosed(this)
 				// 网络错误, 强行断开连接
 				conn.Close()
-				tools.ShowDebug("connection was closed", err.Error())
+				if this.Debug {
+					tools.ShowDebug("connection was closed", err.Error())
+				}
 				break
 			}
+			// break
 		}
 
 		if length > 0 {
@@ -180,7 +188,9 @@ func (this *MessageHandler) RunTcp(heartBeat time.Duration) error {
 		} else if length < 0 {
 			// 读取长度异常
 			conn.Close()
-			tools.ShowDebug("connection was closed")
+			if this.Debug {
+				tools.ShowDebug("connection was closed")
+			}
 			break
 		}
 
@@ -205,12 +215,16 @@ func (this *MessageHandler) RunTcp(heartBeat time.Duration) error {
 		}
 	}
 
+	if this.Debug {
+		tools.ShowDebug("connect logic end")
+	}
 	conn.Close()
 	return nil
 }
 
 func (this *MessageHandler) Close() {
 	this.needClose = true
+	this.Conn.Close()
 }
 
 // 工厂函数
