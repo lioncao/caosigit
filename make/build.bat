@@ -9,6 +9,7 @@ REM go install buddy
 REM go install buddy/net
 go install buddy/net/http
 go install buddy/net/socket
+go install buddy/net/websocket
 REM go install buddy/util
 go install buddy/util/cmd
 REM go install buddy/util/db
