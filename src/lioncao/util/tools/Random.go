@@ -73,7 +73,7 @@ func RandomStringBase(size int, srcChars []byte, srcSize int) string {
 	return string(buf[:size])
 }
 
-var hexStringChars []byte = []byte{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 'a', 'b', 'c', 'd'}
+var hexStringChars []byte = []byte{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 'a', 'b', 'c', 'd', 'e', 'f'}
 var hexStringCharsSize int = len(hexStringChars)
 
 // 获取随机16进制字符串(0-9, a-f)

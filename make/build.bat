@@ -53,6 +53,8 @@ go install github.com/go-sql-driver/mysql
 REM go install github.com/icattlecoder
 go install github.com/icattlecoder/godaemon
 go install github.com/icattlecoder/godaemon/example
+go install github.com/mongodb/mongo-go-driver/bson
+go install github.com/mongodb/mongo-go-driver/mongo
 REM go install github.com/vmihailenco
 go install github.com/vmihailenco/bufio
 go install github.com/vmihailenco/msgpack
