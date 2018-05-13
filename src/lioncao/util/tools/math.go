@@ -17,7 +17,7 @@ func Math_valueToIndex(list []int64, value int64) (idx int) {
 
 	begin := 0
 	for {
-		// ShowInfo("===", begin, cnt, curList)
+		ShowInfo("===", value, begin, cnt)
 		if cnt <= 6 {
 			for i := 1; i < cnt; i++ {
 				if value < curList[i] {

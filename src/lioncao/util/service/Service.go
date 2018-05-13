@@ -86,6 +86,17 @@ type ServiceSuper struct {
 	Language     string          // 语言代码
 	Wg           *sync.WaitGroup // 线程信号量
 	TcpCB        lsocket.TcpCallbacks
+
+	Name        string
+	CfgRootPath string
+	Ip, Port    string // 监听地址
+
+	// mongdb相关
+	Mongo_Ip   string
+	Mongo_Port string
+	Mongo_User string
+	Mongo_Pass string
+	Mongo_DB   string
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -119,6 +130,32 @@ func (this *ServiceSuper) SetWaitGroup(wg *sync.WaitGroup) {
 	if this.Wg != nil {
 		this.Wg.Add(1)
 	}
+}
+
+// 初始化服务配置
+func (this *ServiceSuper) InitServicePublicCfgs() error {
+	cfgs := this.ServiceInfo.Configs
+	if cfgs != nil {
+		// 监听信息处理
+		this.Ip = cfgs.EnsureString("network", "ip", "0.0.0.0")
+		this.Port = cfgs.EnsureString("network", "port", "80")
+
+		this.CfgRootPath = cfgs.EnsureString("global", "config_root", "config")
+
+		// mongo数据库配置处理
+		this.ServiceInfo.Configs.Print()
+		this.Mongo_Ip = cfgs.EnsureString("mongo", "ip", "127.0.0.1")
+		this.Mongo_Port = cfgs.EnsureString("mongo", "port", "27017")
+		this.Mongo_User = cfgs.EnsureString("mongo", "user", "")
+		this.Mongo_Pass = cfgs.EnsureString("mongo", "pass", "")
+		this.Mongo_DB = cfgs.EnsureString("mongo", "dbname", "")
+
+		hb := cfgs.EnsureInt("global", "heartbeat", 50)
+		this.HeartBeat = time.Duration(hb) * time.Millisecond
+		tools.ShowInfo("service heartbeat", this.HeartBeat)
+
+	}
+	return nil
 }
 
 // 启动
