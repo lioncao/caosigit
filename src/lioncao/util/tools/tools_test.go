@@ -1,12 +1,13 @@
 package tools
 
 import (
-	"math"
+	// "math"
 	"testing"
 )
 
 func Test_main(t *testing.T) {
 	// _test_math()
+	// _test_simpleConst()
 }
 
 func _test_math() {
@@ -49,3 +50,12 @@ func _test_sqrt() {
 //   x = x*(1.5f-(xhalf*x*x));
 //   return x;
 // }
+
+func _test_simpleConst() {
+	fileName := "/Users/caosi/data/work/wob/wob/3_server/server/run/lioncao/server/game/config/game/configs/Const.json"
+
+	sc := NewSimpleConstsFromJsonObjFile(fileName)
+	v, ok := sc.I("STUFF_ATTR_RANDOM_MAX", 0)
+	ShowDebug(v, ok)
+
+}

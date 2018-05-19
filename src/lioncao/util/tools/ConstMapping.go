@@ -1,8 +1,26 @@
 package tools
 
+type SimpleConst struct {
+	Name  string `json:"name"`
+	Type  string `json:"type"`
+	Value string `json:"value"`
+}
+
+type SimpleConsts struct {
+	datas map[string]*SimpleConst
+	sep   string
+}
+
 // 二维参数列表工具， 与配置文件中的ConstMapping格式对应
 type ConstMapping struct {
 	allConstList map[string]*ConstList
+}
+
+func NewSimpleConsts() *SimpleConsts {
+	this := new(SimpleConsts)
+	this.datas = make(map[string]*SimpleConst, 0)
+	this.sep = "|"
+	return this
 }
 
 func NewConstMapping() *ConstMapping {
@@ -47,6 +65,33 @@ func (this *ConstInfo) Init(cd *CommonData) {
 func NewConstInfoFromCommonData(cd *CommonData) *ConstInfo {
 	this := NewConstInfo()
 	this.Init(cd)
+	return this
+}
+
+func NewSimpleConstsFromJsonObjFile(filename string) *SimpleConsts {
+	this := NewSimpleConsts()
+
+	// 从 json_obj文件中读出数据
+	datas := make([]*SimpleConst, 0)
+	LoadJsonFile(filename, &datas)
+	cnt := len(datas)
+
+	// 数据入表
+	var (
+		info    *SimpleConst
+		infoOrg *SimpleConst
+		ok      bool
+	)
+	for i := 0; i < cnt; i++ {
+		info = datas[i]
+		infoOrg, ok = this.datas[info.Name]
+		if ok {
+			ShowWarnning("SimpleConst redefined", *info, *infoOrg)
+		}
+
+		this.datas[info.Name] = info
+	}
+
 	return this
 }
 
@@ -161,4 +206,109 @@ func (this *ConstList) ToMap() map[string]string {
 		valuemap[info.KeyValue] = info.ValueValue
 	}
 	return valuemap
+}
+
+/******************************************************************************
+	SimpleConsts
+******************************************************************************/
+func (this *SimpleConsts) S(name string, defaultValue string) (string, bool) {
+	v, ok := this.datas[name]
+	if !ok {
+		return defaultValue, false
+	}
+
+	r, ok := _parse_S(v.Value)
+	if !ok {
+		return defaultValue, false
+	}
+	return r, true
+}
+func (this *SimpleConsts) I(name string, defaultValue int64) (int64, bool) {
+	v, ok := this.datas[name]
+	if !ok {
+		return defaultValue, false
+	}
+
+	r, ok := _parse_I(v.Value)
+	if !ok {
+		return defaultValue, false
+	}
+	return r, true
+}
+func (this *SimpleConsts) B(name string, defaultValue bool) (bool, bool) {
+	v, ok := this.datas[name]
+	if !ok {
+		return defaultValue, false
+	}
+
+	r, ok := _parse_B(v.Value)
+	if !ok {
+		return defaultValue, false
+	}
+	return r, true
+}
+
+func (this *SimpleConsts) F(name string, defaultValue float64) (float64, bool) {
+	v, ok := this.datas[name]
+	if !ok {
+		return defaultValue, false
+	}
+
+	r, ok := _parse_F(v.Value)
+	if !ok {
+		return defaultValue, false
+	}
+	return r, true
+}
+
+func (this *SimpleConsts) SV(name string) []string {
+	v, ok := this.datas[name]
+	if !ok {
+		return nil
+	}
+
+	r, ok := _parse_SV(v.Value, this.sep)
+	if !ok {
+		return nil
+	}
+	return r
+}
+
+func (this *SimpleConsts) IV(name string) []int64 {
+	v, ok := this.datas[name]
+	if !ok {
+		return nil
+	}
+
+	r, ok := _parse_IV(v.Value, this.sep)
+	if !ok {
+		return nil
+	}
+	return r
+}
+
+func (this *SimpleConsts) BV(name string) []bool {
+	v, ok := this.datas[name]
+	if !ok {
+		return nil
+	}
+
+	r, ok := _parse_BV(v.Value, this.sep)
+	if !ok {
+		return nil
+	}
+	return r
+}
+
+func (this *SimpleConsts) FV(name string) []float64 {
+	v, ok := this.datas[name]
+	if !ok {
+		return nil
+	}
+
+	r, ok := _parse_FV(v.Value, this.sep)
+	if !ok {
+		return nil
+	}
+	return r
 }

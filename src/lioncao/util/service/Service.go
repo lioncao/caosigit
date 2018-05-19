@@ -65,6 +65,7 @@ type Service interface {
 	SetInfo(cf ServiceInfo) error                              // 设置信息
 	GetInfo() *ServiceInfo                                     // 获取信息
 	SetWaitGroup(wg *sync.WaitGroup)                           // 设置线程信号量
+	InitServicePublicCfgs()                                    // 读取公共配置
 	Run() error                                                // 启动
 	Stop() error                                               // 结束
 	Reset() error                                              // 复位(停止服务,并回复到初始状态)
@@ -133,7 +134,7 @@ func (this *ServiceSuper) SetWaitGroup(wg *sync.WaitGroup) {
 }
 
 // 初始化服务配置
-func (this *ServiceSuper) InitServicePublicCfgs() error {
+func (this *ServiceSuper) InitServicePublicCfgs() {
 	cfgs := this.ServiceInfo.Configs
 	if cfgs != nil {
 		// 监听信息处理
@@ -155,7 +156,6 @@ func (this *ServiceSuper) InitServicePublicCfgs() error {
 		tools.ShowInfo("service heartbeat", this.HeartBeat)
 
 	}
-	return nil
 }
 
 // 启动
@@ -365,6 +365,7 @@ func (this *ServiceManager) StartServices(factoryFunc ServiceCreateFunc) error {
 			this.Set(k, s)
 			tools.ShowInfo(fmt.Sprintf("service run type=%s , name = %s", sInfo.Type, sInfo.Name))
 			tools.TODO("此处如何保证wg能正常处理?")
+			(*s).InitServicePublicCfgs() // 处理通用的配置,具体项见ServiceSuper的函数实现
 			go (*s).Run()
 		}
 	}

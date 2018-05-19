@@ -23,6 +23,21 @@ func _parse_I(s string) (int64, bool) {
 	}
 	return r, true
 }
+func _parse_B(s string) (bool, bool) {
+	r, e := strconv.ParseBool(s)
+	if e != nil {
+		return false, false
+	}
+	return r, true
+}
+
+func _parse_F(s string) (float64, bool) {
+	r, e := strconv.ParseFloat(s, 64)
+	if e != nil {
+		return 0, false
+	}
+	return r, true
+}
 
 func _parse_SV(s, sep string) ([]string, bool) {
 	if s == "" {
@@ -44,12 +59,25 @@ func _parse_IV(s, sep string) ([]int64, bool) {
 	}
 	return ints, ok
 }
-func _parse_B(s string) (bool, bool) {
-	r, e := strconv.ParseBool(s)
-	if e != nil {
-		return false, false
+
+func _parse_BV(s, sep string) ([]bool, bool) {
+	strs, ok := _parse_SV(s, sep)
+	count := len(strs)
+	bools := make([]bool, count)
+	for i := 0; i < count; i++ {
+		bools[i], _ = strconv.ParseBool(strs[i])
 	}
-	return r, true
+	return bools, ok
+}
+
+func _parse_FV(s, sep string) ([]float64, bool) {
+	strs, ok := _parse_SV(s, sep)
+	count := len(strs)
+	floats := make([]float64, count)
+	for i := 0; i < count; i++ {
+		floats[i], _ = strconv.ParseFloat(strs[i], 64)
+	}
+	return floats, ok
 }
 
 ////////////////////////////////////////////////////////////////////////////////
