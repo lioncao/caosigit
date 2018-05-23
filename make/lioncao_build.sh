@@ -13,6 +13,7 @@ list="$list lioncao/util/db/redis"
 list="$list lioncao/util/network"
 list="$list lioncao/util/service"
 list="$list lioncao/util/tools"
+list="$list lioncao/util/msgcode"
 
 
 echo "=========================================="
