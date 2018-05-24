@@ -36,7 +36,7 @@ func Error(fmtStr string, a ...interface{}) error {
 	if a == nil {
 		return errors.New(fmtStr)
 	}
-	return errors.New(fmt.Sprintf(fmtStr, a))
+	return errors.New(fmt.Sprintf(fmtStr, a...))
 }
 
 const (
