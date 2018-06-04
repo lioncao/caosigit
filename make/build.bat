@@ -15,8 +15,10 @@ go install buddy/util/cmd
 REM go install buddy/util/db
 go install buddy/util/db/mongodb
 go install buddy/util/db/redis
+go install buddy/util/msgcode
 go install buddy/util/network
 go install buddy/util/service
+go install buddy/util/timer
 go install buddy/util/tools
 REM go install code.google.com
 REM go install code.google.com/p

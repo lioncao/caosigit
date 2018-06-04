@@ -10,10 +10,11 @@ list="$list lioncao/util/cmd"
 # list="$list lioncao/util/db"
 list="$list lioncao/util/db/mongodb"
 list="$list lioncao/util/db/redis"
+list="$list lioncao/util/msgcode"
 list="$list lioncao/util/network"
 list="$list lioncao/util/service"
+list="$list lioncao/util/timer"
 list="$list lioncao/util/tools"
-list="$list lioncao/util/msgcode"
 
 
 echo "=========================================="

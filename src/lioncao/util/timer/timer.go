@@ -21,12 +21,11 @@ const (
 	DO_FUNC_LIST_INIT_CAPACITY = 20
 )
 
-func _unix_time_ms(t *time.Time) int64 {
-	return (*t).UnixNano() / 1000000
+func _unix_time_ms(t time.Time) int64 {
+	return t.UnixNano() / 1000000
 }
 func _unix_time_ms_now() int64 {
-	now := time.Now()
-	return _unix_time_ms(&now)
+	return time.Now().UnixNano() / 1000000
 }
 
 // t ~ 执行timer时的unix毫秒值
@@ -61,15 +60,15 @@ type timerDo struct {
 }
 
 type TimerManager struct {
-	TempLock  tools.FastLock
+	TempLock  *tools.FastLock
 	TempCache *ga.ArrayList // 用于给外部添加的临时缓存
 
-	ListLock  tools.FastLock
-	TimerList *ga.ArrayList // 当前正在生效的timer列表
+	ListLock  *tools.FastLock
+	TimerList *ga.ArrayList // 当前正在生效的timer列表(注意!这个表是按照下次执行时间倒序进行处理的, 越先执行的的timer排列越靠后)
 	TimerMap  map[int64]*timerHandler
 
 	// 需要执行的列表
-	DoFuncLock tools.FastLock
+	DoFuncLock *tools.FastLock
 	DoFuncList []*timerDo
 
 	NextHandlerId int64
@@ -80,10 +79,15 @@ type TimerManager struct {
 ******************************************************************************/
 func NewTimerManager() *TimerManager {
 	this := new(TimerManager)
+
+	this.TempLock = tools.NewFastLock()
 	this.TempCache = ga.ArrayListNew(TEMP_CACHE_INIT_CAPACITY)
+
+	this.ListLock = tools.NewFastLock()
 	this.TimerList = ga.ArrayListNew(TIMER_LIST_INIT_CAPACITY)
 	this.TimerMap = make(map[int64]*timerHandler)
 
+	this.DoFuncLock = tools.NewFastLock()
 	this.DoFuncList = make([]*timerDo, 0, DO_FUNC_LIST_INIT_CAPACITY)
 	return this
 }
@@ -95,7 +99,7 @@ func (this *TimerManager) Start() {
 
 func (this *TimerManager) Run() {
 	for {
-		t := _unix_time_ms(nil)
+		t := _unix_time_ms_now()
 		this.onUpdate(t)
 	}
 }
@@ -103,32 +107,51 @@ func (this *TimerManager) Run() {
 // t: 当前时间的毫秒值
 func (this *TimerManager) onUpdate(t int64) {
 	var (
-		tmpList *ga.ArrayList
-		handler *timerHandler
-		delList []int
+		tmpList       *ga.ArrayList
+		handler       *timerHandler
+		doneTimerList []*timerHandler
 	)
 
 	///////////////////////////////////////////////////////////////////////////
 	// 先处理当前的列表
-	delList = make([]int, 0, 20) // 用于缓存需要删除的下标
+	var (
+		doneCnt int64
+		pos     int
+	)
 	cnt := this.TimerList.Size()
-	for i := 0; i < cnt; i++ {
-		handler = this.TimerList.Get(i).(*timerHandler)
-		handler.onUpdate(t)
+	doneTimerList = make([]*timerHandler, 0, 10)
+	for pos = cnt - 1; pos >= 0; pos-- {
+
+		handler = this.TimerList.Get(pos).(*timerHandler)
 		if !handler.valid() {
-			delList = append(delList, i)      // 列表中缓存需要删除的下标
 			delete(this.TimerMap, handler.Id) // map中直接删除
+			this.TimerList.Remove(pos)
+		} else {
+			doneCnt = handler.onUpdate(t)
+
+			if doneCnt <= 0 {
+				break // 没有后续可执行的了,直接结束循环
+			}
+
+			if !handler.valid() {
+				delete(this.TimerMap, handler.Id) // map中直接删除
+				this.TimerList.Remove(pos)
+			} else {
+				doneTimerList = append(doneTimerList, handler)
+			}
+
 		}
 	}
 
-	if len(delList) > 0 {
-		// 倒序删除
-		size := len(delList)
-		for i := size - 1; i >= 0; i-- {
-			this.TimerList.Remove(delList[i])
+	// 发生过donetimer的对象需要重新入表
+	cnt = this.TimerList.Size()
+	if cnt > 0 {
+		this.TimerList.RemoveRange(pos, cnt-1) // 清理掉
+		for i := 0; i < len(doneTimerList); i++ {
+			handler = doneTimerList[i]
+			this.handlerInsertToTimerList(handler)
 		}
 	}
-
 	///////////////////////////////////////////////////////////////////////////
 	// 接下来处理临时列表中的数据
 	// 取出临时表
@@ -138,6 +161,7 @@ func (this *TimerManager) onUpdate(t int64) {
 			defer this.TempLock.Unlock()
 			tmpList = this.TempCache
 			this.TempCache = ga.ArrayListNew(TEMP_CACHE_INIT_CAPACITY)
+			break
 		}
 	}
 
@@ -163,7 +187,7 @@ func (this *TimerManager) handlerInsertToTimerList(newHandler *timerHandler) {
 		handler *timerHandler
 	)
 	size := this.TimerList.Size()
-	for i := 0; i < size; i++ {
+	for i := size - 1; i > -0; i-- {
 		handler = (this.TimerList.Get(i)).(*timerHandler)
 		if newHandler.NextDoTime < handler.NextDoTime {
 			this.TimerList.Insert(i, newHandler)
@@ -171,7 +195,7 @@ func (this *TimerManager) handlerInsertToTimerList(newHandler *timerHandler) {
 		}
 	}
 
-	this.TimerList.Append(newHandler)
+	this.TimerList.Insert(0, newHandler)
 
 }
 
@@ -213,6 +237,7 @@ func (this *TimerManager) AddTimer(delay int64, delta int64, repeat int64, f Tim
 		defer this.TempLock.Unlock()
 		this.TempCache.Append(handler)
 		this.TimerMap[handler.Id] = handler
+		break
 	}
 	return handler.Id
 }
@@ -251,7 +276,7 @@ func NewTimerHander(mgr *TimerManager, delay int64, delta int64, repeat int64, f
 	this := new(timerHandler)
 
 	this.Id = mgr.newHandlerId()
-	this.CreatTime = _unix_time_ms(nil)
+	this.CreatTime = _unix_time_ms_now()
 	this.DelayTime = delay
 	this.DeltaTime = delta
 	this.NextDoTime = this.CreatTime + this.DelayTime
@@ -268,13 +293,15 @@ func NewTimerHander(mgr *TimerManager, delay int64, delta int64, repeat int64, f
 	return this
 }
 
-func (this *timerHandler) onUpdate(t int64) {
-	if !this.valid() {
-		return
-	}
-
+// return: 实际操作次数
+func (this *timerHandler) onUpdate(t int64) int64 {
+	// if !this.valid() {
+	// 	return -1
+	// }
+	cnt := int64(0) // 是否进行过一次addDoTimer
 	for t > this.NextDoTime {
 		this.addDoTimer()
+		cnt++
 
 		// 更新数据
 		this.Count++
@@ -287,6 +314,7 @@ func (this *timerHandler) onUpdate(t int64) {
 			}
 		}
 	}
+	return cnt
 }
 
 func (this *timerHandler) valid() bool {
