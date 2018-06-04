@@ -1,7 +1,7 @@
 package timer
 
 import (
-	ga "3rdparty/goArrayList/goArrayList"
+	// ga "3rdparty/goArrayList/goArrayList"
 	"lioncao/util/tools"
 	"time"
 )
@@ -61,10 +61,10 @@ type timerDo struct {
 
 type TimerManager struct {
 	TempLock  *tools.FastLock
-	TempCache *ga.ArrayList // 用于给外部添加的临时缓存
+	TempCache *ArrayList // 用于给外部添加的临时缓存
 
 	ListLock  *tools.FastLock
-	TimerList *ga.ArrayList // 当前正在生效的timer列表(注意!这个表是按照下次执行时间倒序进行处理的, 越先执行的的timer排列越靠后)
+	TimerList *ArrayList // 当前正在生效的timer列表(注意!这个表是按照下次执行时间倒序进行处理的, 越先执行的的timer排列越靠后)
 	TimerMap  map[int64]*timerHandler
 
 	// 需要执行的列表
@@ -81,10 +81,10 @@ func NewTimerManager() *TimerManager {
 	this := new(TimerManager)
 
 	this.TempLock = tools.NewFastLock()
-	this.TempCache = ga.ArrayListNew(TEMP_CACHE_INIT_CAPACITY)
+	this.TempCache = ArrayListNew(TEMP_CACHE_INIT_CAPACITY)
 
 	this.ListLock = tools.NewFastLock()
-	this.TimerList = ga.ArrayListNew(TIMER_LIST_INIT_CAPACITY)
+	this.TimerList = ArrayListNew(TIMER_LIST_INIT_CAPACITY)
 	this.TimerMap = make(map[int64]*timerHandler)
 
 	this.DoFuncLock = tools.NewFastLock()
@@ -107,7 +107,7 @@ func (this *TimerManager) Run() {
 // t: 当前时间的毫秒值
 func (this *TimerManager) onUpdate(t int64) {
 	var (
-		tmpList       *ga.ArrayList
+		tmpList       *ArrayList
 		handler       *timerHandler
 		doneTimerList []*timerHandler
 	)
@@ -122,7 +122,7 @@ func (this *TimerManager) onUpdate(t int64) {
 	doneTimerList = make([]*timerHandler, 0, 10)
 	for pos = cnt - 1; pos >= 0; pos-- {
 
-		handler = this.TimerList.Get(pos).(*timerHandler)
+		handler = this.TimerList.Get(pos)
 		if !handler.valid() {
 			delete(this.TimerMap, handler.Id) // map中直接删除
 			this.TimerList.Remove(pos)
@@ -146,7 +146,7 @@ func (this *TimerManager) onUpdate(t int64) {
 	// 发生过donetimer的对象需要重新入表
 	cnt = this.TimerList.Size()
 	if cnt > 0 {
-		this.TimerList.RemoveRange(pos, cnt-1) // 清理掉
+		this.TimerList.RemoveRange(pos+1, cnt) // 清理掉
 		for i := 0; i < len(doneTimerList); i++ {
 			handler = doneTimerList[i]
 			this.handlerInsertToTimerList(handler)
@@ -160,7 +160,7 @@ func (this *TimerManager) onUpdate(t int64) {
 		for this.TempLock.Lock() {
 			defer this.TempLock.Unlock()
 			tmpList = this.TempCache
-			this.TempCache = ga.ArrayListNew(TEMP_CACHE_INIT_CAPACITY)
+			this.TempCache = ArrayListNew(TEMP_CACHE_INIT_CAPACITY)
 			break
 		}
 	}
@@ -168,7 +168,7 @@ func (this *TimerManager) onUpdate(t int64) {
 	if tmpList != nil {
 		size := tmpList.Size()
 		for i := 0; i < size; i++ {
-			handler = (tmpList.Get(i)).(*timerHandler)
+			handler = tmpList.Get(i)
 			handler.onUpdate(t) // 在这里尝试执行一次
 			if handler.valid() {
 				// 插入到主列表中
@@ -187,10 +187,10 @@ func (this *TimerManager) handlerInsertToTimerList(newHandler *timerHandler) {
 		handler *timerHandler
 	)
 	size := this.TimerList.Size()
-	for i := size - 1; i > -0; i-- {
-		handler = (this.TimerList.Get(i)).(*timerHandler)
+	for i := size - 1; i >= 0; i-- {
+		handler = this.TimerList.Get(i)
 		if newHandler.NextDoTime < handler.NextDoTime {
-			this.TimerList.Insert(i, newHandler)
+			this.TimerList.Insert(i+1, newHandler)
 			return
 		}
 	}
